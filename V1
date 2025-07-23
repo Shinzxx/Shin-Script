@@ -1,0 +1,153 @@
+-- Load the Spawner Module
+local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+
+-- Fetch data
+local pets = Spawner.GetPets()
+local seeds = Spawner.GetSeeds()
+local eggs = Spawner.GetEggs()
+
+-- Create UI
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "SpawnerUI"
+gui.ResetOnSpawn = false
+
+-- Main Frame
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 420, 0, 380)
+frame.Position = UDim2.new(0.5, -210, 0.5, -190)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+
+-- UI Corner
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 12)
+
+-- Title
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "Grow A Garden - Spawner"
+title.TextColor3 = Color3.fromRGB(180, 255, 180)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+
+-- Dropdown Template Function
+local function createDropdown(name, items, yPos, callback)
+	local label = Instance.new("TextLabel", frame)
+	label.Position = UDim2.new(0, 10, 0, yPos)
+	label.Size = UDim2.new(0, 100, 0, 20)
+	label.Text = name
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.fromRGB(180, 255, 180)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+
+	local dropdown = Instance.new("TextButton", frame)
+	dropdown.Position = UDim2.new(0, 120, 0, yPos)
+	dropdown.Size = UDim2.new(0, 200, 0, 20)
+	dropdown.Text = items[1]
+	dropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	dropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+	dropdown.Font = Enum.Font.Gotham
+	dropdown.TextSize = 14
+
+	local uiCorner = Instance.new("UICorner", dropdown)
+	uiCorner.CornerRadius = UDim.new(0, 4)
+
+	local index = 1
+	dropdown.MouseButton1Click:Connect(function()
+		index += 1
+		if index > #items then index = 1 end
+		dropdown.Text = items[index]
+		callback(items[index])
+	end)
+
+	return dropdown
+end
+
+-- Pet Weight & Age Sliders
+local selectedPet = pets[1]
+local selectedSeed = seeds[1]
+local selectedEgg = eggs[1]
+local petWeight = 1
+local petAge = 1
+
+local function createSlider(name, yPos, minVal, maxVal, default, onChange)
+	local label = Instance.new("TextLabel", frame)
+	label.Position = UDim2.new(0, 10, 0, yPos)
+	label.Size = UDim2.new(0, 100, 0, 20)
+	label.Text = name
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.fromRGB(180, 255, 180)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+
+	local box = Instance.new("TextBox", frame)
+	box.Position = UDim2.new(0, 120, 0, yPos)
+	box.Size = UDim2.new(0, 100, 0, 20)
+	box.Text = tostring(default)
+	box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	box.TextColor3 = Color3.fromRGB(255, 255, 255)
+	box.Font = Enum.Font.Gotham
+	box.TextSize = 14
+
+	local uiCorner = Instance.new("UICorner", box)
+	uiCorner.CornerRadius = UDim.new(0, 4)
+
+	box.FocusLost:Connect(function()
+		local val = tonumber(box.Text)
+		if val and val >= minVal and val <= maxVal then
+			onChange(val)
+		else
+			box.Text = tostring(default)
+		end
+	end)
+end
+
+-- Dropdowns
+createDropdown("Pet", pets, 50, function(pet) selectedPet = pet end)
+createSlider("Weight", 80, 1, 100, 1, function(val) petWeight = val end)
+createSlider("Age", 110, 1, 100, 1, function(val) petAge = val end)
+createDropdown("Seed", seeds, 150, function(seed) selectedSeed = seed end)
+createDropdown("Egg", eggs, 190, function(egg) selectedEgg = egg end)
+
+-- Buttons
+local function createButton(text, yPos, callback)
+	local button = Instance.new("TextButton", frame)
+	button.Position = UDim2.new(0, 10, 0, yPos)
+	button.Size = UDim2.new(0, 390, 0, 30)
+	button.Text = text
+	button.BackgroundColor3 = Color3.fromRGB(40, 90, 60)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.GothamBold
+	button.TextSize = 16
+
+	local uiCorner = Instance.new("UICorner", button)
+	uiCorner.CornerRadius = UDim.new(0, 6)
+
+	button.MouseButton1Click:Connect(callback)
+end
+
+createButton("Spawn Pet", 230, function()
+	Spawner.SpawnPet(selectedPet, petWeight, petAge)
+end)
+
+createButton("Spawn Seed", 270, function()
+	Spawner.SpawnSeed(selectedSeed)
+end)
+
+createButton("Spawn Egg", 310, function()
+	Spawner.SpawnEgg(selectedEgg)
+end)
+
+-- Display Tables (Log)
+createButton("Show Supported Lists in Console", 350, function()
+	print("Supported Pets:")
+	print(table.concat(pets, ", "))
+	print("Supported Seeds:")
+	print(table.concat(seeds, ", "))
+	print("Supported Eggs:")
+	print(table.concat(eggs, ", "))
+end)
