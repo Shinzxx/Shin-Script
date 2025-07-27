@@ -25,7 +25,7 @@ UICorner.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "Shin Script V1"
+Title.Text = "🌱 Pet Spawner"
 Title.BackgroundTransparency = 1
 Title.TextColor3 = Color3.fromRGB(160, 255, 160)
 Title.Font = Enum.Font.GothamBold
@@ -75,148 +75,116 @@ SpawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpawnButton.Font = Enum.Font.GothamBold
 SpawnButton.Parent = MainFrame
 
-local SpawnedListScrolling = Instance.new("Frame")
-SpawnedListScrolling.Size = UDim2.new(1, -20, 0, 150)
-SpawnedListScrolling.Position = UDim2.new(0, 10, 0, 110)
-SpawnedListScrolling.BackgroundColor3 = Color3.fromRGB(25, 30, 25)
-SpawnedListScrolling.Parent = MainFrame
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Size = UDim2.new(1, -20, 0, 150)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 110)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollFrame.ScrollBarThickness = 4
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(25, 30, 25)
+ScrollFrame.BorderSizePixel = 0
+ScrollFrame.Parent = MainFrame
 
--- Username Generator\local usernameData = {
-	western = {
-		"xProGamer", "ShadowSlayer", "EpicBuilder", "NoobMaster", "OGPlayer", 
-		"SweatyTryhard", "VoidWalker", "LootGoblin", "ToxicTeammate", "CarryMePlz",
-		"TryhardTimmy", "SweatySteve", "BuilderBob", "ProPlayer123", "NoobKiller",
-		"AimbotAndy", "ToxicTerry", "LagSpiker", "ReportMePlz", "AdoptMeRich"
-	},
-	japanese = {
-		"龍神_Ryujin", "桜_Sakura", "忍者_Ninja", "神_Kami", "鬼殺隊_DemonSlayer",
-		"卍解_Bankai", "新幹線_Shinkansen", "東京_Tokyo", "大阪_Osaka", "富士山_Fuji",
-		"アニメ_Anime", "漫画_Manga", "カワイイ_Kawaii", "バカ_Baka", "スシ_Sushi",
-		"ラーメン_Ramen", "サムライ_Samurai", "ニンジャ_Ninja", "オタク_Otaku", "ガンダム_Gundam"
-	},
-	filipino = {
-		"Pogiako", "GandaMoNaman", "LodiTol", "Bossing", "SanaAll",
-		"Petmalu", "Werpa", "SanaOl", "Charot", "Hahaha",
-		"EdiWow", "Awit", "SigeNa", "Luh", "AyokoNa",
-		"BidaBida", "SanaAllRich", "AdikYarn", "GGWP", "EZWin"
-	},
-	otherAsian = {
-		"XiaoLong", "WeiWei", "Kimchi", "BTS_ARMY", "KPopFan",
-		"DimSum", "BubbleTea", "HongBao", "Lucky8", "DragonZ",
-		"PandaLove", "SushiLover", "Annyeong", "Kamsa", "Waii"
-	},
-	special = {
-		"★DarkKnight★", "~Fluffy~", "⚡Speedster⚡", "❄Frosty❄", "♛King♛",
-		"♔ProPlayer♔", "☯Balance☯", "✿Flower✿", "♫Music♫", "∞Infinity∞"
-	}
+local UIList = Instance.new("UIListLayout")
+UIList.Padding = UDim.new(0, 5)
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Parent = ScrollFrame
+
+-- Username Generator
+local usernameData = {
+	western = { "xProGamer", "ShadowSlayer", "EpicBuilder" },
+	japanese = { "龍神_Ryujin", "桜_Sakura", "忍者_Ninja" },
+	filipino = { "Pogiako", "GandaMoNaman", "LodiTol" },
+	otherAsian = { "XiaoLong", "WeiWei", "Kimchi" },
+	special = { "★DarkKnight★", "~Fluffy~", "⚡Speedster⚡" }
 }
 
 local function generateRealisticUsername()
-	local usernameType = math.random(1, 5)
-	local nameList = usernameType == 1 and usernameData.western
-		or usernameType == 2 and usernameData.japanese
-		or usernameType == 3 and usernameData.filipino
-		or usernameType == 4 and usernameData.otherAsian
-		or usernameData.special
-
-	local baseName = nameList[math.random(1, #nameList)]
-
-	if math.random(1, 100) <= 70 then
-		local numbers = math.random(1, 100) <= 30 and tostring(math.random(2005, 2025)) or tostring(math.random(1, 999))
-		if math.random(1, 100) <= 40 then
-			return baseName .. numbers
-		else
-			return baseName .. "_" .. numbers
-		end
+	local types = {"western", "japanese", "filipino", "otherAsian", "special"}
+	local category = usernameData[types[math.random(1, #types)]]
+	local baseName = category[math.random(1, #category)]
+	if math.random() < 0.7 then
+		local suffix = math.random() < 0.3 and tostring(math.random(2005, 2025)) or tostring(math.random(1, 999))
+		return math.random() < 0.4 and baseName .. suffix or baseName .. "_" .. suffix
 	end
-
 	return baseName
 end
 
--- Notification Spawner
+-- Notification Logic
 local function createNotification(username, petName, weight, age)
-	local notificationFrame = Instance.new("Frame")
-	notificationFrame.Name = "Notification"
-	notificationFrame.Size = UDim2.new(1, 0, 0, 60)
-	notificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-	notificationFrame.BackgroundTransparency = 1
-	notificationFrame.Position = UDim2.new(0, 0, 0, 10)
-	notificationFrame.Parent = SpawnedListScrolling
+	local notif = Instance.new("Frame")
+	notif.Name = "Notification"
+	notif.Size = UDim2.new(1, 0, 0, 60)
+	notif.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+	notif.BackgroundTransparency = 1
+	notif.LayoutOrder = -tick()
+	notif.Parent = ScrollFrame
 
 	local UICorner = Instance.new("UICorner")
-	UICorner.CornerRadius = UDim.new(0, 5)
-	UICorner.Parent = notificationFrame
+	UICorner.CornerRadius = UDim.new(0, 6)
+	UICorner.Parent = notif
 
 	local userLabel = Instance.new("TextLabel")
-	userLabel.Size = UDim2.new(1, -10, 0, 20)
-	userLabel.Position = UDim2.new(0, 5, 0, 5)
-	userLabel.BackgroundTransparency = 1
 	userLabel.Text = "User: " .. username
+	userLabel.Size = UDim2.new(1, -10, 0, 18)
+	userLabel.Position = UDim2.new(0, 5, 0, 5)
 	userLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
-	userLabel.TextXAlignment = Enum.TextXAlignment.Left
 	userLabel.Font = Enum.Font.GothamSemibold
+	userLabel.BackgroundTransparency = 1
 	userLabel.TextSize = 12
-	userLabel.TextTransparency = 1
-	userLabel.Parent = notificationFrame
+	userLabel.TextXAlignment = Enum.TextXAlignment.Left
+	userLabel.Parent = notif
 
 	local petLabel = Instance.new("TextLabel")
-	petLabel.Size = UDim2.new(1, -10, 0, 20)
-	petLabel.Position = UDim2.new(0, 5, 0, 25)
-	petLabel.BackgroundTransparency = 1
 	petLabel.Text = "Spawned: " .. petName .. " (" .. string.format("%.1f", weight) .. "kg, " .. age .. "yrs)"
+	petLabel.Size = UDim2.new(1, -10, 0, 18)
+	petLabel.Position = UDim2.new(0, 5, 0, 25)
 	petLabel.TextColor3 = Color3.fromRGB(220, 220, 180)
-	petLabel.TextXAlignment = Enum.TextXAlignment.Left
 	petLabel.Font = Enum.Font.Gotham
+	petLabel.BackgroundTransparency = 1
 	petLabel.TextSize = 12
-	petLabel.TextTransparency = 1
-	petLabel.Parent = notificationFrame
+	petLabel.TextXAlignment = Enum.TextXAlignment.Left
+	petLabel.Parent = notif
 
 	local timeLabel = Instance.new("TextLabel")
-	timeLabel.Size = UDim2.new(1, -10, 0, 15)
-	timeLabel.Position = UDim2.new(0, 5, 0, 45)
-	timeLabel.BackgroundTransparency = 1
 	timeLabel.Text = "Just now"
+	timeLabel.Size = UDim2.new(1, -10, 0, 12)
+	timeLabel.Position = UDim2.new(0, 5, 0, 44)
 	timeLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-	timeLabel.TextXAlignment = Enum.TextXAlignment.Left
 	timeLabel.Font = Enum.Font.Gotham
+	timeLabel.BackgroundTransparency = 1
 	timeLabel.TextSize = 10
-	timeLabel.TextTransparency = 1
-	timeLabel.Parent = notificationFrame
+	timeLabel.TextXAlignment = Enum.TextXAlignment.Left
+	timeLabel.Parent = notif
 
-	TweenService:Create(notificationFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
-	TweenService:Create(userLabel, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
-	TweenService:Create(petLabel, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
-	TweenService:Create(timeLabel, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+	TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+	ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y + 10)
 
-	local swayConnection = RunService.Heartbeat:Connect(function()
-		if notificationFrame and notificationFrame.Parent then
-			notificationFrame.Position = UDim2.new(math.sin(os.clock() * 2.5) * 0.02, 0, 0, 10)
+	local sway = RunService.Heartbeat:Connect(function()
+		if notif.Parent then
+			notif.Position = UDim2.new(math.sin(tick() * 2.5) * 0.01, 0, 0, 0)
 		end
 	end)
+	notif.Destroying:Connect(function() sway:Disconnect() end)
 
-	notificationFrame.Destroying:Connect(function()
-		if swayConnection then swayConnection:Disconnect() end
-	end)
-
-	local count = 0
+	local notifs = 0
 	local oldest = nil
-	for _, child in ipairs(SpawnedListScrolling:GetChildren()) do
-		if child:IsA("Frame") and child.Name == "Notification" then
-			count += 1
-			if not oldest then oldest = child end
+	for _, c in pairs(ScrollFrame:GetChildren()) do
+		if c:IsA("Frame") and c.Name == "Notification" then
+			notifs += 1
+			if not oldest or c.LayoutOrder < oldest.LayoutOrder then
+				oldest = c
+			end
 		end
 	end
-
-	if count > 20 and oldest then
-		TweenService:Create(oldest, TweenInfo.new(0.3), {
-			BackgroundTransparency = 1,
-			Position = UDim2.new(0, 0, 0, -20)
-		}):Play()
-		oldest:Destroy()
+	if notifs > 20 and oldest then
+		TweenService:Create(oldest, TweenInfo.new(0.3), {BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, -20)}):Play()
+		task.delay(0.3, function()
+			oldest:Destroy()
+		end)
 	end
 end
 
--- Manual spawn button
+-- Manual Spawn
 SpawnButton.MouseButton1Click:Connect(function()
 	local pet = PetName.Text ~= "" and PetName.Text or "MysteryPet"
 	local weight = tonumber(WeightSlider.Text) or math.random(10, 300) / 10
@@ -225,15 +193,11 @@ SpawnButton.MouseButton1Click:Connect(function()
 	createNotification(username, pet, weight, age)
 end)
 
--- Auto spawn random pets
-local petTypes = {
-	"Kitsune", "Raccoon", "Disco Bee", "Corrupted Kitsune", "Raiju",
-	"T-Rex", "Spinosaurus", "Dragonfly", "Butterfly", "Mimic Octopus", "Queen Bee"
-}
-
+-- Auto Spawn
+local petTypes = {"Kitsune", "Raccoon", "Disco Bee", "Corrupted Kitsune", "Raiju", "T-Rex", "Spinosaurus", "Dragonfly", "Butterfly", "Mimic Octopus", "Queen Bee"}
 coroutine.wrap(function()
 	while true do
-		wait(math.random(2, 5))
+		task.wait(math.random(2, 4))
 		local username = generateRealisticUsername()
 		local pet = petTypes[math.random(1, #petTypes)]
 		local weight = math.random(10, 5000) / 10
