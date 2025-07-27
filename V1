@@ -125,7 +125,7 @@ local function createNotification(username, petName, weight, age)
 
 	local userLabel = Instance.new("TextLabel")
 	userLabel.Text = "User: " .. username
-	userLabel.Size = UDim2.new(1, -10, 0, 18)
+	userLabel.Size = UDim2.new(1, -30, 0, 18)
 	userLabel.Position = UDim2.new(0, 5, 0, 5)
 	userLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
 	userLabel.Font = Enum.Font.GothamSemibold
@@ -156,6 +156,21 @@ local function createNotification(username, petName, weight, age)
 	timeLabel.TextXAlignment = Enum.TextXAlignment.Left
 	timeLabel.Parent = notif
 
+	local closeButton = Instance.new("TextButton")
+	closeButton.Text = "✕"
+	closeButton.Size = UDim2.new(0, 20, 0, 20)
+	closeButton.Position = UDim2.new(1, -25, 0, 5)
+	closeButton.BackgroundTransparency = 1
+	closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+	closeButton.Font = Enum.Font.GothamBold
+	closeButton.TextSize = 14
+	closeButton.Parent = notif
+
+	closeButton.MouseButton1Click:Connect(function()
+		TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, -20)}):Play()
+		task.delay(0.3, function() notif:Destroy() end)
+	end)
+
 	TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 	ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y + 10)
 
@@ -165,23 +180,6 @@ local function createNotification(username, petName, weight, age)
 		end
 	end)
 	notif.Destroying:Connect(function() sway:Disconnect() end)
-
-	local notifs = 0
-	local oldest = nil
-	for _, c in pairs(ScrollFrame:GetChildren()) do
-		if c:IsA("Frame") and c.Name == "Notification" then
-			notifs += 1
-			if not oldest or c.LayoutOrder < oldest.LayoutOrder then
-				oldest = c
-			end
-		end
-	end
-	if notifs > 20 and oldest then
-		TweenService:Create(oldest, TweenInfo.new(0.3), {BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, -20)}):Play()
-		task.delay(0.3, function()
-			oldest:Destroy()
-		end)
-	end
 end
 
 -- Manual Spawn
@@ -205,3 +203,4 @@ coroutine.wrap(function()
 		createNotification(username, pet, weight, age)
 	end
 end)()
+
