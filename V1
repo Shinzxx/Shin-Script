@@ -1,153 +1,295 @@
--- Load the Spawner Module
-local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+local Players = game:GetService("Players")
 
--- Fetch data
-local pets = Spawner.GetPets()
-local seeds = Spawner.GetSeeds()
-local eggs = Spawner.GetEggs()
+local Player = Players.LocalPlayer
 
--- Create UI
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "SpawnerUI"
-gui.ResetOnSpawn = false
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- Main Frame
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 420, 0, 380)
-frame.Position = UDim2.new(0.5, -210, 0.5, -190)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.AnchorPoint = Vector2.new(0.5, 0.5)
+local TweenService = game:GetService("TweenService")
 
--- UI Corner
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
+local RunService = game:GetService("RunService")
 
--- Title
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "Grow A Garden - Spawner"
-title.TextColor3 = Color3.fromRGB(180, 255, 180)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
 
--- Dropdown Template Function
-local function createDropdown(name, items, yPos, callback)
-	local label = Instance.new("TextLabel", frame)
-	label.Position = UDim2.new(0, 10, 0, yPos)
-	label.Size = UDim2.new(0, 100, 0, 20)
-	label.Text = name
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.fromRGB(180, 255, 180)
-	label.Font = Enum.Font.Gotham
-	label.TextSize = 14
 
-	local dropdown = Instance.new("TextButton", frame)
-	dropdown.Position = UDim2.new(0, 120, 0, yPos)
-	dropdown.Size = UDim2.new(0, 200, 0, 20)
-	dropdown.Text = items[1]
-	dropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	dropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
-	dropdown.Font = Enum.Font.Gotham
-	dropdown.TextSize = 14
+-- Create ScreenGui
 
-	local uiCorner = Instance.new("UICorner", dropdown)
-	uiCorner.CornerRadius = UDim.new(0, 4)
+local ScreenGui = Instance.new("ScreenGui")
 
-	local index = 1
-	dropdown.MouseButton1Click:Connect(function()
-		index += 1
-		if index > #items then index = 1 end
-		dropdown.Text = items[index]
-		callback(items[index])
-	end)
+ScreenGui.Name = "PetSpawnerUI"
 
-	return dropdown
-end
+ScreenGui.Parent = PlayerGui
 
--- Pet Weight & Age Sliders
-local selectedPet = pets[1]
-local selectedSeed = seeds[1]
-local selectedEgg = eggs[1]
-local petWeight = 1
-local petAge = 1
+ScreenGui.ResetOnSpawn = false
 
-local function createSlider(name, yPos, minVal, maxVal, default, onChange)
-	local label = Instance.new("TextLabel", frame)
-	label.Position = UDim2.new(0, 10, 0, yPos)
-	label.Size = UDim2.new(0, 100, 0, 20)
-	label.Text = name
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.fromRGB(180, 255, 180)
-	label.Font = Enum.Font.Gotham
-	label.TextSize = 14
 
-	local box = Instance.new("TextBox", frame)
-	box.Position = UDim2.new(0, 120, 0, yPos)
-	box.Size = UDim2.new(0, 100, 0, 20)
-	box.Text = tostring(default)
-	box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	box.TextColor3 = Color3.fromRGB(255, 255, 255)
-	box.Font = Enum.Font.Gotham
-	box.TextSize = 14
 
-	local uiCorner = Instance.new("UICorner", box)
-	uiCorner.CornerRadius = UDim.new(0, 4)
+-- Main Window
 
-	box.FocusLost:Connect(function()
-		local val = tonumber(box.Text)
-		if val and val >= minVal and val <= maxVal then
-			onChange(val)
-		else
-			box.Text = tostring(default)
-		end
-	end)
-end
+local MainFrame = Instance.new("Frame")
 
--- Dropdowns
-createDropdown("Pet", pets, 50, function(pet) selectedPet = pet end)
-createSlider("Weight", 80, 1, 100, 1, function(val) petWeight = val end)
-createSlider("Age", 110, 1, 100, 1, function(val) petAge = val end)
-createDropdown("Seed", seeds, 150, function(seed) selectedSeed = seed end)
-createDropdown("Egg", eggs, 190, function(egg) selectedEgg = egg end)
+MainFrame.Name = "MainFrame"
 
--- Buttons
-local function createButton(text, yPos, callback)
-	local button = Instance.new("TextButton", frame)
-	button.Position = UDim2.new(0, 10, 0, yPos)
-	button.Size = UDim2.new(0, 390, 0, 30)
-	button.Text = text
-	button.BackgroundColor3 = Color3.fromRGB(40, 90, 60)
-	button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	button.Font = Enum.Font.GothamBold
-	button.TextSize = 16
+MainFrame.Size = UDim2.new(0, 320, 0, 400)
 
-	local uiCorner = Instance.new("UICorner", button)
-	uiCorner.CornerRadius = UDim.new(0, 6)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
 
-	button.MouseButton1Click:Connect(callback)
-end
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 
-createButton("Spawn Pet", 230, function()
-	Spawner.SpawnPet(selectedPet, petWeight, petAge)
-end)
+MainFrame.BorderSizePixel = 0
 
-createButton("Spawn Seed", 270, function()
-	Spawner.SpawnSeed(selectedSeed)
-end)
+MainFrame.ClipsDescendants = true
 
-createButton("Spawn Egg", 310, function()
-	Spawner.SpawnEgg(selectedEgg)
-end)
+MainFrame.Parent = ScreenGui
 
--- Display Tables (Log)
-createButton("Show Supported Lists in Console", 350, function()
-	print("Supported Pets:")
-	print(table.concat(pets, ", "))
-	print("Supported Seeds:")
-	print(table.concat(seeds, ", "))
-	print("Supported Eggs:")
-	print(table.concat(eggs, ", "))
-end)
+
+
+-- Shadow Effect
+
+local Shadow = Instance.new("ImageLabel")
+
+Shadow.Name = "Shadow"
+
+Shadow.Image = "rbxassetid://1316045217"
+
+Shadow.Size = UDim2.new(1, 12, 1, 12)
+
+Shadow.Position = UDim2.new(0, -6, 0, -6)
+
+Shadow.BackgroundTransparency = 1
+
+Shadow.ScaleType = Enum.ScaleType.Slice
+
+Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+
+Shadow.ZIndex = -1
+
+Shadow.Parent = MainFrame
+
+
+
+-- Rounded Corners
+
+local UICorner = Instance.new("UICorner")
+
+UICorner.CornerRadius = UDim.new(0, 8)
+
+UICorner.Parent = MainFrame
+
+
+
+-- Title Bar
+
+local TitleBar = Instance.new("Frame")
+
+TitleBar.Name = "TitleBar"
+
+TitleBar.Size = UDim2.new(1, 0, 0, 32)
+
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+
+TitleBar.BorderSizePixel = 0
+
+TitleBar.Parent = MainFrame
+
+
+
+-- Title Text
+
+local TitleText = Instance.new("TextLabel")
+
+TitleText.Name = "TitleText"
+
+TitleText.Size = UDim2.new(1, -70, 1, 0)
+
+TitleText.Position = UDim2.new(0, 12, 0, 0)
+
+TitleText.BackgroundTransparency = 1
+
+TitleText.Text = "PET SPAWNER PRO"
+
+TitleText.TextColor3 = Color3.fromRGB(220, 220, 255)
+
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+
+TitleText.Font = Enum.Font.GothamBold
+
+TitleText.TextSize = 14
+
+TitleText.Parent = TitleBar
+
+
+
+-- Active Users Counter
+
+local ActiveUsers = Instance.new("TextLabel")
+
+ActiveUsers.Name = "ActiveUsers"
+
+ActiveUsers.Size = UDim2.new(0.4, 0, 1, 0)
+
+ActiveUsers.Position = UDim2.new(0.5, 0, 0, 0)
+
+ActiveUsers.BackgroundTransparency = 1
+
+ActiveUsers.Text = "Online: 124.5K"
+
+ActiveUsers.TextColor3 = Color3.fromRGB(120, 255, 120)
+
+ActiveUsers.TextXAlignment = Enum.TextXAlignment.Right
+
+ActiveUsers.Font = Enum.Font.GothamSemibold
+
+ActiveUsers.TextSize = 12
+
+ActiveUsers.Parent = TitleBar
+
+
+
+-- Close Button
+
+local CloseButton = Instance.new("TextButton")
+
+CloseButton.Name = "CloseButton"
+
+CloseButton.Size = UDim2.new(0, 32, 0, 32)
+
+CloseButton.Position = UDim2.new(1, -32, 0, 0)
+
+CloseButton.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+
+CloseButton.BorderSizePixel = 0
+
+CloseButton.Text = "Ã"
+
+CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+
+CloseButton.Font = Enum.Font.GothamBold
+
+CloseButton.TextSize = 18
+
+CloseButton.Parent = TitleBar
+
+
+
+-- Content Frame
+
+local ContentFrame = Instance.new("Frame")
+
+ContentFrame.Name = "ContentFrame"
+
+ContentFrame.Size = UDim2.new(1, -20, 1, -42)
+
+ContentFrame.Position = UDim2.new(0, 10, 0, 32)
+
+ContentFrame.BackgroundTransparency = 1
+
+ContentFrame.Parent = MainFrame
+
+
+
+-- Pet Input Section
+
+local PetInputFrame = Instance.new("Frame")
+
+PetInputFrame.Name = "PetInputFrame"
+
+PetInputFrame.Size = UDim2.new(1, 0, 0, 100)
+
+PetInputFrame.Position = UDim2.new(0, 0, 0, 0)
+
+PetInputFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+
+PetInputFrame.Parent = ContentFrame
+
+
+
+local UICorner2 = Instance.new("UICorner")
+
+UICorner2.CornerRadius = UDim.new(0, 6)
+
+UICorner2.Parent = PetInputFrame
+
+
+
+-- Pet Name Input
+
+local PetNameInput = Instance.new("TextBox")
+
+PetNameInput.Name = "PetNameInput"
+
+PetNameInput.Size = UDim2.new(1, -10, 0, 32)
+
+PetNameInput.Position = UDim2.new(0, 5, 0, 40)
+
+PetNameInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+
+PetNameInput.BorderSizePixel = 0
+
+PetNameInput.PlaceholderText = "Enter pet name..."
+
+PetNameInput.Text = ""
+
+PetNameInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+PetNameInput.Font = Enum.Font.Gotham
+
+PetNameInput.TextSize = 14
+
+PetNameInput.Parent = PetInputFrame
+
+
+
+local UICorner3 = Instance.new("UICorner")
+
+UICorner3.CornerRadius = UDim.new(0, 4)
+
+UICorner3.Parent = PetNameInput
+
+
+
+-- Stats Input Frame
+
+local StatsFrame = Instance.new("Frame")
+
+StatsFrame.Name = "StatsFrame"
+
+StatsFrame.Size = UDim2.new(1, 0, 0, 32)
+
+StatsFrame.Position = UDim2.new(0, 0, 0, 110)
+
+StatsFrame.BackgroundTransparency = 1
+
+StatsFrame.Parent = ContentFrame
+
+
+
+-- Weight Input
+
+local KgInput = Instance.new("TextBox")
+
+KgInput.Name = "KgInput"
+
+KgInput.Size = UDim2.new(0.48, 0, 1, 0)
+
+KgInput.Position = UDim2.new(0, 0, 0, 0)
+
+KgInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+
+KgInput.BorderSizePixel = 0
+
+KgInput.PlaceholderText = "Weight (kg)"
+
+KgInput.Text = ""
+
+KgInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+KgInput.Font = Enum.Font.Gotham
+
+KgInput.TextSize = 14
+
+KgInput.Parent = StatsFrame
+
+
+
+loc
