@@ -13,8 +13,8 @@ ScreenGui.Parent = PlayerGui
 
 -- Main UI Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 320, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 320, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -78,6 +78,64 @@ CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 18
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = TitleBar
+
+-- Buttons Section
+local function createButton(name, position, text)
+	local button = Instance.new("TextButton")
+	button.Name = name
+	button.Size = UDim2.new(0.9, 0, 0, 32)
+	button.Position = position
+	button.BackgroundColor3 = Color3.fromRGB(40, 60, 40)
+	button.TextColor3 = Color3.fromRGB(240, 240, 240)
+	button.Font = Enum.Font.Gotham
+	button.TextSize = 14
+	button.Text = text
+	button.BorderSizePixel = 0
+	button.Parent = MainFrame
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = button
+	return button
+end
+
+local spawnPetButton = createButton("SpawnPetButton", UDim2.new(0.05, 0, 0, 50), "Spawn Pet")
+local spawnSeedButton = createButton("SpawnSeedButton", UDim2.new(0.05, 0, 0, 90), "Spawn Seed")
+local spawnEggButton = createButton("SpawnEggButton", UDim2.new(0.05, 0, 0, 130), "Spawn Egg")
+
+-- Sliders Section (Placeholder Labels)
+local weightLabel = Instance.new("TextLabel")
+weightLabel.Size = UDim2.new(0.9, 0, 0, 24)
+weightLabel.Position = UDim2.new(0.05, 0, 0, 180)
+weightLabel.BackgroundTransparency = 1
+weightLabel.Text = "Pet Weight: [slider here]"
+weightLabel.TextColor3 = Color3.fromRGB(180, 255, 180)
+weightLabel.Font = Enum.Font.Gotham
+weightLabel.TextSize = 12
+weightLabel.Parent = MainFrame
+
+local ageLabel = Instance.new("TextLabel")
+ageLabel.Size = UDim2.new(0.9, 0, 0, 24)
+ageLabel.Position = UDim2.new(0.05, 0, 0, 210)
+ageLabel.BackgroundTransparency = 1
+ageLabel.Text = "Pet Age: [slider here]"
+ageLabel.TextColor3 = Color3.fromRGB(180, 255, 180)
+ageLabel.Font = Enum.Font.Gotham
+ageLabel.TextSize = 12
+ageLabel.Parent = MainFrame
+
+-- Display Table Placeholder
+local tableBox = Instance.new("TextLabel")
+tableBox.Size = UDim2.new(0.9, 0, 0, 100)
+tableBox.Position = UDim2.new(0.05, 0, 0, 250)
+tableBox.BackgroundColor3 = Color3.fromRGB(20, 40, 20)
+tableBox.Text = "[Pet Stats Table Placeholder]"
+tableBox.TextColor3 = Color3.fromRGB(200, 255, 200)
+tableBox.TextWrapped = true
+tableBox.Font = Enum.Font.Code
+tableBox.TextSize = 12
+tableBox.Parent = MainFrame
+local corner = Instance.new("UICorner")
+corner.Parent = tableBox
 
 -- Close Button Function
 CloseButton.MouseButton1Click:Connect(function()
