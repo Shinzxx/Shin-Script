@@ -135,7 +135,7 @@ updateOnlineCount()
 Players.PlayerAdded:Connect(updateOnlineCount)
 Players.PlayerRemoving:Connect(updateOnlineCount)
 
--- ========== WINDOW DRAGGING + SAVE POSITION ==========
+-- ========== DRAGGING FUNCTION ADDED HERE ==========
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -156,8 +156,7 @@ MainFrame.InputBegan:Connect(function(input)
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
-
-				-- Save current position
+				-- Save position
 				Player:SetAttribute("LastUIPosition", {
 					XScale = MainFrame.Position.X.Scale,
 					XOffset = MainFrame.Position.X.Offset,
@@ -181,7 +180,7 @@ UserInputService.InputChanged:Connect(function(input)
 	end
 end)
 
--- Restore previous position
+-- Restore previous saved position
 local savedPos = Player:GetAttribute("LastUIPosition")
 if savedPos then
 	MainFrame.Position = UDim2.new(
