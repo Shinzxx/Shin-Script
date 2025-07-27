@@ -4,203 +4,492 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
--- UI Setup
+-- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PetSpawnerUI"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
+-- Main Window
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -150)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 35, 30)
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 320, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
-MainFrame.Active = true
-MainFrame.Draggable = true
 
+-- Shadow Effect
+local Shadow = Instance.new("ImageLabel")
+Shadow.Name = "Shadow"
+Shadow.Image = "rbxassetid://1316045217"
+Shadow.Size = UDim2.new(1, 12, 1, 12)
+Shadow.Position = UDim2.new(0, -6, 0, -6)
+Shadow.BackgroundTransparency = 1
+Shadow.ScaleType = Enum.ScaleType.Slice
+Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+Shadow.ZIndex = -1
+Shadow.Parent = MainFrame
+
+-- Rounded Corners
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "🌱 Pet Spawner"
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(160, 255, 160)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
-Title.Parent = MainFrame
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 32)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
 
-local PetName = Instance.new("TextBox")
-PetName.Size = UDim2.new(0.5, -10, 0, 25)
-PetName.Position = UDim2.new(0, 10, 0, 40)
-PetName.PlaceholderText = "Pet Name"
-PetName.Text = ""
-PetName.TextSize = 14
-PetName.TextColor3 = Color3.fromRGB(220, 255, 220)
-PetName.BackgroundColor3 = Color3.fromRGB(45, 55, 45)
-PetName.Font = Enum.Font.Gotham
-PetName.Parent = MainFrame
+-- Title Text
+local TitleText = Instance.new("TextLabel")
+TitleText.Name = "TitleText"
+TitleText.Size = UDim2.new(1, -70, 1, 0)
+TitleText.Position = UDim2.new(0, 12, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "Shin Script V1"
+TitleText.TextColor3 = Color3.fromRGB(220, 220, 255)
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextSize = 14
+TitleText.Parent = TitleBar
 
-local WeightSlider = Instance.new("TextBox")
-WeightSlider.Size = UDim2.new(0.5, -10, 0, 25)
-WeightSlider.Position = UDim2.new(0.5, 0, 0, 40)
-WeightSlider.PlaceholderText = "Weight (kg)"
-WeightSlider.Text = ""
-WeightSlider.TextSize = 14
-WeightSlider.TextColor3 = Color3.fromRGB(220, 255, 220)
-WeightSlider.BackgroundColor3 = Color3.fromRGB(45, 55, 45)
-WeightSlider.Font = Enum.Font.Gotham
-WeightSlider.Parent = MainFrame
+-- Active Users Counter
+local ActiveUsers = Instance.new("TextLabel")
+ActiveUsers.Name = "ActiveUsers"
+ActiveUsers.Size = UDim2.new(0.4, 0, 1, 0)
+ActiveUsers.Position = UDim2.new(0.5, 0, 0, 0)
+ActiveUsers.BackgroundTransparency = 1
+ActiveUsers.Text = "Online: 124.5K"
+ActiveUsers.TextColor3 = Color3.fromRGB(120, 255, 120)
+ActiveUsers.TextXAlignment = Enum.TextXAlignment.Right
+ActiveUsers.Font = Enum.Font.GothamSemibold
+ActiveUsers.TextSize = 12
+ActiveUsers.Parent = TitleBar
 
-local AgeSlider = Instance.new("TextBox")
-AgeSlider.Size = UDim2.new(0.5, -10, 0, 25)
-AgeSlider.Position = UDim2.new(0, 10, 0, 75)
-AgeSlider.PlaceholderText = "Age (years)"
-AgeSlider.Text = ""
-AgeSlider.TextSize = 14
-AgeSlider.TextColor3 = Color3.fromRGB(220, 255, 220)
-AgeSlider.BackgroundColor3 = Color3.fromRGB(45, 55, 45)
-AgeSlider.Font = Enum.Font.Gotham
-AgeSlider.Parent = MainFrame
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 32, 0, 32)
+CloseButton.Position = UDim2.new(1, -32, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.Parent = TitleBar
 
+-- Content Frame
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, -20, 1, -42)
+ContentFrame.Position = UDim2.new(0, 10, 0, 32)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+
+-- Pet Input Section
+local PetInputFrame = Instance.new("Frame")
+PetInputFrame.Name = "PetInputFrame"
+PetInputFrame.Size = UDim2.new(1, 0, 0, 100)
+PetInputFrame.Position = UDim2.new(0, 0, 0, 0)
+PetInputFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+PetInputFrame.Parent = ContentFrame
+
+local UICorner2 = Instance.new("UICorner")
+UICorner2.CornerRadius = UDim.new(0, 6)
+UICorner2.Parent = PetInputFrame
+
+-- Pet Name Input
+local PetNameInput = Instance.new("TextBox")
+PetNameInput.Name = "PetNameInput"
+PetNameInput.Size = UDim2.new(1, -10, 0, 32)
+PetNameInput.Position = UDim2.new(0, 5, 0, 40)
+PetNameInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+PetNameInput.BorderSizePixel = 0
+PetNameInput.PlaceholderText = "Enter pet name..."
+PetNameInput.Text = ""
+PetNameInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+PetNameInput.Font = Enum.Font.Gotham
+PetNameInput.TextSize = 14
+PetNameInput.Parent = PetInputFrame
+
+local UICorner3 = Instance.new("UICorner")
+UICorner3.CornerRadius = UDim.new(0, 4)
+UICorner3.Parent = PetNameInput
+
+-- Stats Input Frame
+local StatsFrame = Instance.new("Frame")
+StatsFrame.Name = "StatsFrame"
+StatsFrame.Size = UDim2.new(1, 0, 0, 32)
+StatsFrame.Position = UDim2.new(0, 0, 0, 110)
+StatsFrame.BackgroundTransparency = 1
+StatsFrame.Parent = ContentFrame
+
+-- Weight Input
+local KgInput = Instance.new("TextBox")
+KgInput.Name = "KgInput"
+KgInput.Size = UDim2.new(0.48, 0, 1, 0)
+KgInput.Position = UDim2.new(0, 0, 0, 0)
+KgInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+KgInput.BorderSizePixel = 0
+KgInput.PlaceholderText = "Weight (kg)"
+KgInput.Text = ""
+KgInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KgInput.Font = Enum.Font.Gotham
+KgInput.TextSize = 14
+KgInput.Parent = StatsFrame
+
+local UICorner4 = Instance.new("UICorner")
+UICorner4.CornerRadius = UDim.new(0, 4)
+UICorner4.Parent = KgInput
+
+-- Age Input
+local AgeInput = Instance.new("TextBox")
+AgeInput.Name = "AgeInput"
+AgeInput.Size = UDim2.new(0.48, 0, 1, 0)
+AgeInput.Position = UDim2.new(0.52, 0, 0, 0)
+AgeInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+AgeInput.BorderSizePixel = 0
+AgeInput.PlaceholderText = "Age"
+AgeInput.Text = ""
+AgeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+AgeInput.Font = Enum.Font.Gotham
+AgeInput.TextSize = 14
+AgeInput.Parent = StatsFrame
+
+local UICorner5 = Instance.new("UICorner")
+UICorner5.CornerRadius = UDim.new(0, 4)
+UICorner5.Parent = AgeInput
+
+-- Spawn Button
 local SpawnButton = Instance.new("TextButton")
-SpawnButton.Size = UDim2.new(0.5, -10, 0, 25)
-SpawnButton.Position = UDim2.new(0.5, 0, 0, 75)
-SpawnButton.Text = "Spawn Pet"
-SpawnButton.TextSize = 14
-SpawnButton.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
+SpawnButton.Name = "SpawnButton"
+SpawnButton.Size = UDim2.new(1, 0, 0, 36)
+SpawnButton.Position = UDim2.new(0, 0, 0, 150)
+SpawnButton.BackgroundColor3 = Color3.fromRGB(80, 160, 80)
+SpawnButton.BorderSizePixel = 0
+SpawnButton.Text = "SPAWN PET"
 SpawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpawnButton.Font = Enum.Font.GothamBold
-SpawnButton.Parent = MainFrame
+SpawnButton.TextSize = 14
+SpawnButton.Parent = ContentFrame
 
-local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Size = UDim2.new(1, -20, 0, 150)
-ScrollFrame.Position = UDim2.new(0, 10, 0, 110)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-ScrollFrame.ScrollBarThickness = 4
-ScrollFrame.BackgroundColor3 = Color3.fromRGB(25, 30, 25)
-ScrollFrame.BorderSizePixel = 0
-ScrollFrame.Parent = MainFrame
+local UICorner6 = Instance.new("UICorner")
+UICorner6.CornerRadius = UDim.new(0, 6)
+UICorner6.Parent = SpawnButton
 
-local UIList = Instance.new("UIListLayout")
-UIList.Padding = UDim.new(0, 5)
-UIList.SortOrder = Enum.SortOrder.LayoutOrder
-UIList.Parent = ScrollFrame
+-- Spawned Pets List
+local SpawnedListFrame = Instance.new("Frame")
+SpawnedListFrame.Name = "SpawnedListFrame"
+SpawnedListFrame.Size = UDim2.new(1, 0, 0, 180)
+SpawnedListFrame.Position = UDim2.new(0, 0, 0, 195)
+SpawnedListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+SpawnedListFrame.Parent = ContentFrame
 
--- Username Generator
+local UICorner7 = Instance.new("UICorner")
+UICorner7.CornerRadius = UDim.new(0, 6)
+UICorner7.Parent = SpawnedListFrame
+
+local SpawnedListLabel = Instance.new("TextLabel")
+SpawnedListLabel.Name = "SpawnedListLabel"
+SpawnedListLabel.Size = UDim2.new(1, -10, 0, 20)
+SpawnedListLabel.Position = UDim2.new(0, 10, 0, 5)
+SpawnedListLabel.BackgroundTransparency = 1
+SpawnedListLabel.Text = "RECENT SPAWNS:"
+SpawnedListLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
+SpawnedListLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpawnedListLabel.Font = Enum.Font.GothamBold
+SpawnedListLabel.TextSize = 12
+SpawnedListLabel.Parent = SpawnedListFrame
+
+local SpawnedListScrolling = Instance.new("ScrollingFrame")
+SpawnedListScrolling.Name = "SpawnedListScrolling"
+SpawnedListScrolling.Size = UDim2.new(1, -10, 1, -30)
+SpawnedListScrolling.Position = UDim2.new(0, 5, 0, 25)
+SpawnedListScrolling.BackgroundTransparency = 1
+SpawnedListScrolling.BorderSizePixel = 0
+SpawnedListScrolling.ScrollBarThickness = 5
+SpawnedListScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SpawnedListScrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
+SpawnedListScrolling.Parent = SpawnedListFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Padding = UDim.new(0, 5)
+UIListLayout.Parent = SpawnedListScrolling
+
+-- ========== REALISTIC USERNAME DATA (2025 TRENDS) ==========
 local usernameData = {
-	western = { "xProGamer", "ShadowSlayer", "EpicBuilder" },
-	japanese = { "龍神_Ryujin", "桜_Sakura", "忍者_Ninja" },
-	filipino = { "Pogiako", "GandaMoNaman", "LodiTol" },
-	otherAsian = { "XiaoLong", "WeiWei", "Kimchi" },
-	special = { "★DarkKnight★", "~Fluffy~", "⚡Speedster⚡" }
+	-- Western names (modern gaming trends)
+	western = {
+		"xProGamer", "ShadowSlayer", "EpicBuilder", "NoobMaster", "OGPlayer", 
+		"SweatyTryhard", "VoidWalker", "LootGoblin", "ToxicTeammate", "CarryMePlz",
+		"TryhardTimmy", "SweatySteve", "BuilderBob", "ProPlayer123", "NoobKiller",
+		"AimbotAndy", "ToxicTerry", "LagSpiker", "ReportMePlz", "AdoptMeRich"
+	},
+
+	-- Japanese names (current trends)
+	japanese = {
+		"龍神_Ryujin", "桜_Sakura", "忍者_Ninja", "神_Kami", "鬼殺隊_DemonSlayer",
+		"卍解_Bankai", "新幹線_Shinkansen", "東京_Tokyo", "大阪_Osaka", "富士山_Fuji",
+		"アニメ_Anime", "漫画_Manga", "カワイイ_Kawaii", "バカ_Baka", "スシ_Sushi",
+		"ラーメン_Ramen", "サムライ_Samurai", "ニンジャ_Ninja", "オタク_Otaku", "ガンダム_Gundam"
+	},
+
+	-- Filipino names (current trends)
+	filipino = {
+		"Pogiako", "GandaMoNaman", "LodiTol", "Bossing", "SanaAll",
+		"Petmalu", "Werpa", "SanaOl", "Charot", "Hahaha",
+		"EdiWow", "Awit", "SigeNa", "Luh", "AyokoNa",
+		"BidaBida", "SanaAllRich", "AdikYarn", "GGWP", "EZWin"
+	},
+
+	-- Other Asian names
+	otherAsian = {
+		"XiaoLong", "WeiWei", "Kimchi", "BTS_ARMY", "KPopFan",
+		"DimSum", "BubbleTea", "HongBao", "Lucky8", "DragonZ",
+		"PandaLove", "SushiLover", "Annyeong", "Kamsa", "Waii"
+	},
+
+	-- Special characters/emojis
+	special = {
+		"★DarkKnight★", "~Fluffy~", "⚡Speedster⚡", "❄Frosty❄", "♛King♛",
+		"♔ProPlayer♔", "☯Balance☯", "✿Flower✿", "♫Music♫", "∞Infinity∞"
+	}
 }
 
+-- Generate realistic 2025 username
 local function generateRealisticUsername()
-	local types = {"western", "japanese", "filipino", "otherAsian", "special"}
-	local category = usernameData[types[math.random(1, #types)]]
-	local baseName = category[math.random(1, #category)]
-	if math.random() < 0.7 then
-		local suffix = math.random() < 0.3 and tostring(math.random(2005, 2025)) or tostring(math.random(1, 999))
-		return math.random() < 0.4 and baseName .. suffix or baseName .. "_" .. suffix
+	local usernameType = math.random(1, 5)
+	local nameList = usernameType == 1 and usernameData.western
+		or usernameType == 2 and usernameData.japanese
+		or usernameType == 3 and usernameData.filipino
+		or usernameType == 4 and usernameData.otherAsian
+		or usernameData.special
+
+	local baseName = nameList[math.random(1, #nameList)]
+
+	-- Add numbers/suffixes (common in 2025)
+	if math.random(1, 100) <= 70 then  -- 70% chance to add numbers
+		local numbers = math.random(1, 100) <= 30 and tostring(math.random(2005, 2025))  -- Year
+			or tostring(math.random(1, 999))  -- Random numbers
+
+		-- Different number formats
+		if math.random(1, 100) <= 40 then
+			return baseName .. numbers
+		else
+			return baseName .. "_" .. numbers
+		end
 	end
+
 	return baseName
 end
 
--- Notification Logic
+-- ========== ANIMATED NOTIFICATION SYSTEM ==========
 local function createNotification(username, petName, weight, age)
-	local notif = Instance.new("Frame")
-	notif.Name = "Notification"
-	notif.Size = UDim2.new(1, 0, 0, 60)
-	notif.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-	notif.BackgroundTransparency = 1
-	notif.LayoutOrder = -tick()
-	notif.Parent = ScrollFrame
+	local notificationFrame = Instance.new("Frame")
+	notificationFrame.Name = "Notification"
+	notificationFrame.Size = UDim2.new(1, 0, 0, 60)
+	notificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+	notificationFrame.BackgroundTransparency = 1
+	notificationFrame.Position = UDim2.new(0, 0, 0, 10)
+	notificationFrame.Parent = SpawnedListScrolling
 
 	local UICorner = Instance.new("UICorner")
-	UICorner.CornerRadius = UDim.new(0, 6)
-	UICorner.Parent = notif
+	UICorner.CornerRadius = UDim.new(0, 5)
+	UICorner.Parent = notificationFrame
 
+	-- Username Label
 	local userLabel = Instance.new("TextLabel")
-	userLabel.Text = "User: " .. username
-	userLabel.Size = UDim2.new(1, -30, 0, 18)
+	userLabel.Name = "UserLabel"
+	userLabel.Size = UDim2.new(1, -10, 0, 20)
 	userLabel.Position = UDim2.new(0, 5, 0, 5)
-	userLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
-	userLabel.Font = Enum.Font.GothamSemibold
 	userLabel.BackgroundTransparency = 1
-	userLabel.TextSize = 12
+	userLabel.Text = "User: " .. username
+	userLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
 	userLabel.TextXAlignment = Enum.TextXAlignment.Left
-	userLabel.Parent = notif
+	userLabel.Font = Enum.Font.GothamSemibold
+	userLabel.TextSize = 12
+	userLabel.TextTransparency = 1
+	userLabel.Parent = notificationFrame
 
+	-- Pet Info Label
 	local petLabel = Instance.new("TextLabel")
-	petLabel.Text = "Spawned: " .. petName .. " (" .. string.format("%.1f", weight) .. "kg, " .. age .. "yrs)"
-	petLabel.Size = UDim2.new(1, -10, 0, 18)
+	petLabel.Name = "PetLabel"
+	petLabel.Size = UDim2.new(1, -10, 0, 20)
 	petLabel.Position = UDim2.new(0, 5, 0, 25)
-	petLabel.TextColor3 = Color3.fromRGB(220, 220, 180)
-	petLabel.Font = Enum.Font.Gotham
 	petLabel.BackgroundTransparency = 1
-	petLabel.TextSize = 12
+	petLabel.Text = "Spawned: " .. petName .. " (" .. string.format("%.1f", weight) .. "kg, " .. age .. "yrs)"
+	petLabel.TextColor3 = Color3.fromRGB(220, 220, 180)
 	petLabel.TextXAlignment = Enum.TextXAlignment.Left
-	petLabel.Parent = notif
+	petLabel.Font = Enum.Font.Gotham
+	petLabel.TextSize = 12
+	petLabel.TextTransparency = 1
+	petLabel.Parent = notificationFrame
 
+	-- Time Label
 	local timeLabel = Instance.new("TextLabel")
-	timeLabel.Text = "Just now"
-	timeLabel.Size = UDim2.new(1, -10, 0, 12)
-	timeLabel.Position = UDim2.new(0, 5, 0, 44)
-	timeLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-	timeLabel.Font = Enum.Font.Gotham
+	timeLabel.Name = "TimeLabel"
+	timeLabel.Size = UDim2.new(1, -10, 0, 15)
+	timeLabel.Position = UDim2.new(0, 5, 0, 45)
 	timeLabel.BackgroundTransparency = 1
-	timeLabel.TextSize = 10
+	timeLabel.Text = "Just now"
+	timeLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 	timeLabel.TextXAlignment = Enum.TextXAlignment.Left
-	timeLabel.Parent = notif
+	timeLabel.Font = Enum.Font.Gotham
+	timeLabel.TextSize = 10
+	timeLabel.TextTransparency = 1
+	timeLabel.Parent = notificationFrame
 
-	local closeButton = Instance.new("TextButton")
-	closeButton.Text = "✕"
-	closeButton.Size = UDim2.new(0, 20, 0, 20)
-	closeButton.Position = UDim2.new(1, -25, 0, 5)
-	closeButton.BackgroundTransparency = 1
-	closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
-	closeButton.Font = Enum.Font.GothamBold
-	closeButton.TextSize = 14
-	closeButton.Parent = notif
+	-- Animate entry
+	local fadeIn = TweenService:Create(
+		notificationFrame,
+		TweenInfo.new(0.4, Enum.EasingStyle.Quad),
+		{BackgroundTransparency = 0}
+	)
 
-	closeButton.MouseButton1Click:Connect(function()
-		TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, -20)}):Play()
-		task.delay(0.3, function() notif:Destroy() end)
+	local textFadeIn = TweenService:Create(
+		userLabel,
+		TweenInfo.new(0.4, Enum.EasingStyle.Quad),
+		{TextTransparency = 0}
+	)
+
+	local petFadeIn = TweenService:Create(
+		petLabel,
+		TweenInfo.new(0.4, Enum.EasingStyle.Quad),
+		{TextTransparency = 0}
+	)
+
+	local timeFadeIn = TweenService:Create(
+		timeLabel,
+		TweenInfo.new(0.4, Enum.EasingStyle.Quad),
+		{TextTransparency = 0}
+	)
+
+	fadeIn:Play()
+	textFadeIn:Play()
+	petFadeIn:Play()
+	timeFadeIn:Play()
+
+	-- Gentle sway animation
+	local swayConnection
+	swayConnection = RunService.Heartbeat:Connect(function()
+		local offset = math.sin(os.clock() * 2.5) * 1.5  -- Gentle sway
+		notificationFrame.Position = UDim2.new(offset/50, 0, 0, 0)
 	end)
 
-	TweenService:Create(notif, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
-	ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y + 10)
+	-- Clean up when destroyed
+	notificationFrame.Destroying:Connect(function()
+		swayConnection:Disconnect()
+	end)
 
-	local sway = RunService.Heartbeat:Connect(function()
-		if notif.Parent then
-			notif.Position = UDim2.new(math.sin(tick() * 2.5) * 0.01, 0, 0, 0)
+	-- Auto-remove if too many
+	if #SpawnedListScrolling:GetChildren() > 20 then
+		local oldest = SpawnedListScrolling:GetChildren()[2]
+		if oldest then
+			local fadeOut = TweenService:Create(
+				oldest,
+				TweenInfo.new(0.3),
+				{BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, -20)}
+			)
+
+			fadeOut:Play()
+			fadeOut.Completed:Connect(function()
+				oldest:Destroy()
+			end)
 		end
-	end)
-	notif.Destroying:Connect(function() sway:Disconnect() end)
+	end
 end
 
--- Manual Spawn
+-- ========== SPAWN BUTTON FUNCTIONALITY ==========
 SpawnButton.MouseButton1Click:Connect(function()
-	local pet = PetName.Text ~= "" and PetName.Text or "MysteryPet"
-	local weight = tonumber(WeightSlider.Text) or math.random(10, 300) / 10
-	local age = tonumber(AgeSlider.Text) or math.random(1, 50)
-	local username = generateRealisticUsername()
-	createNotification(username, pet, weight, age)
+	local petName = PetNameInput.Text
+	local weight = tonumber(KgInput.Text) or 0
+	local age = tonumber(AgeInput.Text) or 0
+
+	if petName == "" then
+		petName = "Unknown Pet"
+	end
+
+	createNotification(Player.Name, petName, weight, age)
+
+	-- Here you would add your actual pet spawning logic
+	-- game:GetService("ReplicatedStorage").SpawnPet:FireServer(petName, weight, age)
 end)
 
--- Auto Spawn
-local petTypes = {"Kitsune", "Raccoon", "Disco Bee", "Corrupted Kitsune", "Raiju", "T-Rex", "Spinosaurus", "Dragonfly", "Butterfly", "Mimic Octopus", "Queen Bee"}
-coroutine.wrap(function()
+-- ========== AUTO-GENERATE REALISTIC SPAWNS ==========
+local petTypes = {
+	"Kitsune", "Raccoon", "Disco Bee", "Corrupted Kitsune", "Raiju",
+	"T-Rex", "Spinosaurus", "Dragonfly", "Butterfly", "Mimic Octopus",
+	"Queen Bee"
+}
+
+local function generateRandomSpawns()
 	while true do
-		task.wait(math.random(2, 4))
+		wait(math.random(2, 5))  -- Random interval between spawns
+
 		local username = generateRealisticUsername()
 		local pet = petTypes[math.random(1, #petTypes)]
-		local weight = math.random(10, 5000) / 10
+		local weight = math.random(10, 5000)/10  -- 1.0 to 500.0 kg
 		local age = math.random(1, 100)
+
 		createNotification(username, pet, weight, age)
 	end
-end)()
+end
 
+-- Start generating random spawns
+coroutine.wrap(generateRandomSpawns)()
+
+-- ========== WINDOW DRAGGING ==========
+local dragging = false
+local dragStart, startPos
+
+MainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+
+		local connection
+		connection = input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+				connection:Disconnect()
+			end
+		end)
+	end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		MainFrame.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+-- Close button functionality
+CloseButton.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+-- Update active users counter
+local function updateUserCount()
+	while true do
+		local base = 120000
+		local fluctuation = math.random(-15000, 20000)
+		local count = base + fluctuation
+
+		ActiveUsers.Text = "Online: " .. string.format("%.1f", count/1000) .. "K"
+		wait(math.random(10, 20))
+	end
+end
+
+coroutine.wrap(updateUserCount)()
