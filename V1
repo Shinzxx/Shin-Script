@@ -2,6 +2,11 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
+-- Prevent running script multiple times per server by checking if UI already exists
+if PlayerGui:FindFirstChild("PetSpawnerUI") then
+    return -- Exit script if already executed once
+end
+
 -- Load Spawner
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 local Pets = Spawner.GetPets()
