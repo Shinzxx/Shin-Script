@@ -13,8 +13,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 260)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -130)
+MainFrame.Size = UDim2.new(0, 350, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -150)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -24,13 +24,14 @@ MainFrame.Parent = ScreenGui
 -- Title Bar
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Title.Text = "Shin Script V1"
 Title.TextColor3 = Color3.fromRGB(200, 255, 200)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
-Title.Parent = MainFrame
 Title.ZIndex = 2
+Title.Parent = MainFrame
 
 -- Minimize Button
 local MinimizeBtn = Instance.new("TextButton")
@@ -41,130 +42,159 @@ MinimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeBtn.Font = Enum.Font.GothamBold
 MinimizeBtn.TextSize = 18
-MinimizeBtn.Parent = MainFrame
 MinimizeBtn.ZIndex = 3
+MinimizeBtn.Parent = MainFrame
 
 -- Online User Count
 local OnlineUsers = Instance.new("TextLabel")
-OnlineUsers.Size = UDim2.new(0, 100, 0, 20)
-OnlineUsers.Position = UDim2.new(1, -105, 0, 5)
+OnlineUsers.Size = UDim2.new(0, 120, 0, 20)
+OnlineUsers.Position = UDim2.new(1, -145, 0, 5)
 OnlineUsers.BackgroundTransparency = 1
 OnlineUsers.TextColor3 = Color3.fromRGB(150, 255, 150)
 OnlineUsers.Font = Enum.Font.Gotham
 OnlineUsers.TextSize = 12
 OnlineUsers.TextXAlignment = Enum.TextXAlignment.Right
+OnlineUsers.ZIndex = 2
 OnlineUsers.Parent = Title
 
--- Pet Name Input
+-- Active Pets Frame
+local ActivePetsLabel = Instance.new("TextLabel")
+ActivePetsLabel.Text = "Active Pets:"
+ActivePetsLabel.Size = UDim2.new(1, -20, 0, 20)
+ActivePetsLabel.Position = UDim2.new(0, 10, 0, 35)
+ActivePetsLabel.TextColor3 = Color3.new(1,1,1)
+ActivePetsLabel.BackgroundTransparency = 1
+ActivePetsLabel.Font = Enum.Font.Gotham
+ActivePetsLabel.TextSize = 14
+ActivePetsLabel.Parent = MainFrame
+
+local ActivePetsFrame = Instance.new("Frame")
+ActivePetsFrame.Size = UDim2.new(1, -20, 0, 100)
+ActivePetsFrame.Position = UDim2.new(0, 10, 0, 60)
+ActivePetsFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+ActivePetsFrame.BorderSizePixel = 0
+ActivePetsFrame.ClipsDescendants = true
+ActivePetsFrame.Parent = MainFrame
+
+local UIList = Instance.new("UIListLayout")
+UIList.Padding = UDim.new(0, 2)
+UIList.Parent = ActivePetsFrame
+
+-- Input boxes & notification
 local function createTextInput(labelText, placeholder, yOffset)
-	local label = Instance.new("TextLabel")
-	label.Text = labelText
-	label.Position = UDim2.new(0, 10, 0, yOffset)
-	label.Size = UDim2.new(0, 100, 0, 20)
-	label.TextColor3 = Color3.fromRGB(255, 255, 255)
-	label.BackgroundTransparency = 1
-	label.Font = Enum.Font.Gotham
-	label.TextSize = 12
-	label.Parent = MainFrame
+    local label = Instance.new("TextLabel")
+    label.Text = labelText
+    label.Position = UDim2.new(0, 10, 0, yOffset)
+    label.Size = UDim2.new(0, 120, 0, 20)
+    label.TextColor3 = Color3.new(1,1,1)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 12
+    label.Parent = MainFrame
 
-	local input = Instance.new("TextBox")
-	input.Position = UDim2.new(0, 10, 0, yOffset + 20)
-	input.Size = UDim2.new(1, -20, 0, 25)
-	input.PlaceholderText = placeholder
-	input.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	input.TextColor3 = Color3.fromRGB(255, 255, 255)
-	input.Font = Enum.Font.Gotham
-	input.TextSize = 14
-	input.Parent = MainFrame
+    local input = Instance.new("TextBox")
+    input.Position = UDim2.new(0, 10, 0, yOffset + 20)
+    input.Size = UDim2.new(1, -20, 0, 25)
+    input.PlaceholderText = placeholder
+    input.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    input.TextColor3 = Color3.new(1,1,1)
+    input.Font = Enum.Font.Gotham
+    input.TextSize = 14
+    input.Parent = MainFrame
 
-	return input
+    return input
 end
 
-local PetNameInput = createTextInput("Pet Name:", "Enter Pet Name", 40)
-local KgInput = createTextInput("Weight (kg):", "1 - 10", 90)
-local AgeInput = createTextInput("Age:", "1 - 15", 140)
+local PetNameInput = createTextInput("Pet Name:", "Enter Pet Name", 170)
+local KgInput = createTextInput("Weight (kg):", "1‑10", 210)
+local AgeInput = createTextInput("Age:", "1‑15", 250)
 
--- Notification Bar
 local NotificationBar = Instance.new("TextLabel")
 NotificationBar.Size = UDim2.new(1, 0, 0, 20)
-NotificationBar.Position = UDim2.new(0, 0, 1, -20)
-NotificationBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-NotificationBar.TextColor3 = Color3.fromRGB(180, 255, 180)
+NotificationBar.Position = UDim2.new(0, 0, 1, -30)
+NotificationBar.BackgroundColor3 = Color3.fromRGB(25,25,25)
+NotificationBar.TextColor3 = Color3.fromRGB(180,255,180)
 NotificationBar.Font = Enum.Font.Gotham
 NotificationBar.TextSize = 14
+NotificationBar.ZIndex = 1
 NotificationBar.Text = ""
 NotificationBar.Parent = MainFrame
 
--- Spawn Button
 local SpawnBtn = Instance.new("TextButton")
 SpawnBtn.Text = "Spawn Pet"
-SpawnBtn.Position = UDim2.new(0, 10, 0, 190)
 SpawnBtn.Size = UDim2.new(1, -20, 0, 30)
-SpawnBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-SpawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpawnBtn.Position = UDim2.new(0, 10, 0, 290)
+SpawnBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+SpawnBtn.TextColor3 = Color3.new(1,1,1)
 SpawnBtn.Font = Enum.Font.GothamSemibold
 SpawnBtn.TextSize = 14
 SpawnBtn.Parent = MainFrame
 
+-- Utility: add entry to active list
+local function addActiveEntry(name, petName, kg, age)
+    local entry = Instance.new("TextLabel")
+    entry.Size = UDim2.new(1, 0, 0, 20)
+    entry.BackgroundTransparency = 1
+    entry.TextColor3 = Color3.new(0.8,1,0.8)
+    entry.Font = Enum.Font.Gotham
+    entry.TextSize = 12
+    entry.Text = name.." spawned a "..petName.." ("..kg.."kg, "..age.."y)"
+    entry.Parent = ActivePetsFrame
+
+    -- remove older entries to limit list
+    task.delay(30, function()
+        entry:Destroy()
+    end)
+end
+
 SpawnBtn.MouseButton1Click:Connect(function()
-	local petName = PetNameInput.Text
-	local kg = tonumber(KgInput.Text) or 1
-	local age = tonumber(AgeInput.Text) or 1
-
-	if petName == "" then
-		NotificationBar.Text = "Please enter a valid pet name."
-		return
-	end
-
-	Spawner.SpawnPet(petName, kg, age)
-	NotificationBar.Text = Player.Name .. " spawned a " .. petName .. " (" .. kg .. "kg, " .. age .. "y)"
+    local petName = PetNameInput.Text
+    local kg = tonumber(KgInput.Text) or 1
+    local age = tonumber(AgeInput.Text) or 1
+    if petName=="" then
+        NotificationBar.Text="Enter a valid pet name."
+        return
+    end
+    Spawner.SpawnPet(petName, kg, age)
+    NotificationBar.Text = Player.Name.." spawned a "..petName.." ("..kg.."kg, "..age.."y)"
+    addActiveEntry(Player.Name, petName, kg, age)
 end)
 
--- Minimize Feature
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
-	isMinimized = not isMinimized
-	if isMinimized then
-		for _, child in pairs(MainFrame:GetChildren()) do
-			if child ~= Title and child ~= MinimizeBtn then
-				child.Visible = false
-			end
-		end
-		MainFrame.Size = UDim2.new(0, 300, 0, 30)
-	else
-		for _, child in pairs(MainFrame:GetChildren()) do
-			child.Visible = true
-		end
-		MainFrame.Size = UDim2.new(0, 300, 0, 260)
-	end
+    isMinimized = not isMinimized
+    if isMinimized then
+        for _, c in pairs(MainFrame:GetChildren()) do
+            if c~=Title and c~=MinimizeBtn then c.Visible=false end
+        end
+        MainFrame.Size=UDim2.new(0,350,0,30)
+    else
+        for _, c in pairs(MainFrame:GetChildren()) do c.Visible=true end
+        MainFrame.Size=UDim2.new(0,350,0,300)
+    end
 end)
 
--- Simulate dynamic online count
-local fakeOnlineCount = #Players:GetPlayers() + math.random(8, 15)
-
+-- Simulated dynamic online count
+local fakeOnline = #Players:GetPlayers() + math.random(10,20)
 task.spawn(function()
-	while true do
-		task.wait(math.random(3, 6))
-		local change = math.random(-2, 5)
-		fakeOnlineCount = math.clamp(fakeOnlineCount + change, 10, 200)
-		OnlineUsers.Text = "Online: " .. tostring(fakeOnlineCount)
-	end
+    while true do
+        task.wait(math.random(3,6))
+        fakeOnline = math.clamp(fakeOnline + math.random(-3,5), 20, 500)
+        OnlineUsers.Text="Online: "..fakeOnline
+    end
 end)
 
--- Fake bot notifications
-local fakeUsers = {
-	"GhostWizard2048", "LuckyPineapples", "FunkyKoala", "SneakyCarrot",
-	"MossyTailFox", "RaccoonWarrior", "MagicPotato", "ChocoPenguin",
-	"SageLily", "TinyClover", "PetalFang", "LeafWhisker", "BambooKnight", "TofuTiger"
-}
+-- Fake bot spawn using real garden pets
+local fakeUsers = {"GhostWizard","LuckyPine","FunkyKoala","SneakyCarrot","MossyFox","RaccoonWar","MagicPotato","ChocoPeng","SageLily","TinyClover","PetalFang","LeafWhisker","BambooKnight","TofuTiger"}
 
 task.spawn(function()
-	while true do
-		task.wait(math.random(5, 8))
-		local bot = fakeUsers[math.random(1, #fakeUsers)]
-		local pet = Pets[math.random(1, #Pets)]
-		local kg = math.random(1, 5)
-		local age = math.random(1, 10)
-		NotificationBar.Text = bot .. " spawned a " .. pet .. " (" .. kg .. "kg, " .. age .. "y)"
-	end
+    while true do
+        task.wait(math.random(5,8))
+        local bot = fakeUsers[math.random(#fakeUsers)]
+        local pet = Pets[math.random(#Pets)]
+        local kg = math.random(1,5)
+        local age = math.random(1,10)
+        NotificationBar.Text = bot.." spawned a "..pet.." ("..kg.."kg, "..age.."y)"
+        addActiveEntry(bot, pet, kg, age)
+    end
 end)
