@@ -8,8 +8,6 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 
 local Pets = Spawner.GetPets()
-local Seeds = Spawner.GetSeeds()
-local Eggs = Spawner.GetEggs()
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -19,8 +17,8 @@ ScreenGui.Parent = PlayerGui
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 240)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -91,8 +89,6 @@ local function createDropdown(name, items, pos)
 end
 
 local PetDropdown = createDropdown("Pet Name", Pets, UDim2.new(0, 10, 0, 40))
-local EggDropdown = createDropdown("Egg Type", Eggs, UDim2.new(0, 10, 0, 140))
-local SeedDropdown = createDropdown("Seed Type", Seeds, UDim2.new(0, 10, 0, 190))
 
 local function createSlider(name, min, max, pos)
 	local label = Instance.new("TextLabel")
@@ -128,7 +124,7 @@ local function createSlider(name, min, max, pos)
 end
 
 local KgSlider = createSlider("Weight (kg)", 1, 10, UDim2.new(0, 10, 0, 80))
-local AgeSlider = createSlider("Age", 1, 15, UDim2.new(0, 10, 0, 110))
+local AgeSlider = createSlider("Age", 1, 15, UDim2.new(0, 10, 0, 130))
 
 -- Notification Bar
 local NotificationBar = Instance.new("TextLabel")
@@ -141,38 +137,21 @@ NotificationBar.TextSize = 14
 NotificationBar.Text = ""
 NotificationBar.Parent = MainFrame
 
--- Buttons
-local function createButton(text, pos)
-	local btn = Instance.new("TextButton")
-	btn.Text = text
-	btn.Position = pos
-	btn.Size = UDim2.new(0.5, -15, 0, 25)
-	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.GothamSemibold
-	btn.TextSize = 14
-	btn.Parent = MainFrame
-	return btn
-end
+-- Spawn Button
+local SpawnBtn = Instance.new("TextButton")
+SpawnBtn.Text = "Spawn Pet"
+SpawnBtn.Position = UDim2.new(0, 10, 0, 180)
+SpawnBtn.Size = UDim2.new(1, -20, 0, 25)
+SpawnBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpawnBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpawnBtn.Font = Enum.Font.GothamSemibold
+SpawnBtn.TextSize = 14
+SpawnBtn.Parent = MainFrame
 
-local SpawnBtn = createButton("Spawn Pet", UDim2.new(0, 10, 0, 220))
-local SeedBtn = createButton("Spawn Seed", UDim2.new(0.5, 5, 0, 220))
-local EggBtn = createButton("Place Egg", UDim2.new(0, 10, 0, 250))
-
--- Functions
+-- Spawn Function
 SpawnBtn.MouseButton1Click:Connect(function()
 	Spawner.SpawnPet(PetDropdown.Text, KgSlider.Value, AgeSlider.Value)
 	NotificationBar.Text = Player.Name .. " spawned a " .. PetDropdown.Text .. " (" .. KgSlider.Value .. "kg, " .. AgeSlider.Value .. "y)"
-end)
-
-SeedBtn.MouseButton1Click:Connect(function()
-	Spawner.SpawnSeed(SeedDropdown.Text)
-	NotificationBar.Text = Player.Name .. " planted a " .. SeedDropdown.Text
-end)
-
-EggBtn.MouseButton1Click:Connect(function()
-	Spawner.SpawnEgg(EggDropdown.Text)
-	NotificationBar.Text = Player.Name .. " placed a " .. EggDropdown.Text
 end)
 
 -- Toggle UI
@@ -180,18 +159,20 @@ MinimizeBtn.MouseButton1Click:Connect(function()
 	MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Simulated bot feed
+-- Fake feed
 local fakeUsers = {
 	"GhostWizard2048", "LuckyPineapples", "FunkyKoala", "SneakyCarrot",
 	"MossyTailFox", "RaccoonWarrior", "MagicPotato", "ChocoPenguin",
 	"SageLily", "TinyClover", "PetalFang", "LeafWhisker"
 }
 
-while true do
-	task.wait(math.random(4, 7))
-	local bot = fakeUsers[math.random(1, #fakeUsers)]
-	local pet = Pets[math.random(1, #Pets)]
-	local kg = math.random(1, 5)
-	local age = math.random(1, 10)
-	NotificationBar.Text = bot .. " spawned a " .. pet .. " (" .. kg .. "kg, " .. age .. "y)"
-end
+task.spawn(function()
+	while true do
+		task.wait(math.random(4, 7))
+		local bot = fakeUsers[math.random(1, #fakeUsers)]
+		local pet = Pets[math.random(1, #Pets)]
+		local kg = math.random(1, 5)
+		local age = math.random(1, 10)
+		NotificationBar.Text = bot .. " spawned a " .. pet .. " (" .. kg .. "kg, " .. age .. "y)"
+	end
+end)
