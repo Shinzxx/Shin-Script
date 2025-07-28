@@ -2,14 +2,12 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- Prevent running script multiple times per server by checking if UI already exists
-if PlayerGui:FindFirstChild("PetSpawnerUI") then
-    return -- Exit script if already executed once
-end
+if PlayerGui:FindFirstChild("PetSpawnerUI") then return end
 
--- Load Spawner
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 local Pets = Spawner.GetPets()
+
+local ActivePets = {}
 
 -- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -26,7 +24,7 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
--- Title Bar
+-- Title
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.Position = UDim2.new(0, 0, 0, 0)
@@ -38,7 +36,7 @@ Title.TextSize = 18
 Title.ZIndex = 2
 Title.Parent = MainFrame
 
--- Online User Count (LEFT)
+-- Online Count
 local OnlineUsers = Instance.new("TextLabel")
 OnlineUsers.Size = UDim2.new(0, 120, 0, 20)
 OnlineUsers.Position = UDim2.new(0, 10, 0, 5)
@@ -50,7 +48,7 @@ OnlineUsers.TextXAlignment = Enum.TextXAlignment.Left
 OnlineUsers.ZIndex = 2
 OnlineUsers.Parent = Title
 
--- Minimize Button
+-- Minimize
 local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Text = "-"
 MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -62,7 +60,7 @@ MinimizeBtn.TextSize = 18
 MinimizeBtn.ZIndex = 3
 MinimizeBtn.Parent = MainFrame
 
--- Input Boxes
+-- Input Function
 local function createTextInput(labelText, placeholder, yOffset)
 	local label = Instance.new("TextLabel")
 	label.Text = labelText
@@ -91,7 +89,7 @@ local PetNameInput = createTextInput("Pet Name:", "Enter Pet Name", 40)
 local KgInput = createTextInput("Weight (kg):", "1‑10", 90)
 local AgeInput = createTextInput("Age:", "1‑15", 140)
 
--- Notification container setup (scrollable history)
+-- Notification Box
 local NotificationFrame = Instance.new("ScrollingFrame")
 NotificationFrame.Size = UDim2.new(1, -20, 0, 80)
 NotificationFrame.Position = UDim2.new(0, 10, 0, 190)
@@ -106,6 +104,36 @@ local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 4)
 UIListLayout.Parent = NotificationFrame
+
+-- Active Pets UI
+local ActivePetsFrame = Instance.new("Frame")
+ActivePetsFrame.Size = UDim2.new(0, 160, 0, 100)
+ActivePetsFrame.Position = UDim2.new(0, 370, 0.5, -160)
+ActivePetsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ActivePetsFrame.BorderSizePixel = 0
+ActivePetsFrame.Parent = ScreenGui
+
+local ActivePetsTitle = Instance.new("TextLabel")
+ActivePetsTitle.Size = UDim2.new(1, 0, 0, 20)
+ActivePetsTitle.Text = "Active Pets: 0/3"
+ActivePetsTitle.TextColor3 = Color3.fromRGB(255, 255, 150)
+ActivePetsTitle.Font = Enum.Font.GothamBold
+ActivePetsTitle.TextSize = 14
+ActivePetsTitle.BackgroundTransparency = 1
+ActivePetsTitle.Parent = ActivePetsFrame
+
+local PetList = Instance.new("TextLabel")
+PetList.Size = UDim2.new(1, -10, 1, -20)
+PetList.Position = UDim2.new(0, 5, 0, 20)
+PetList.TextColor3 = Color3.fromRGB(200, 200, 200)
+PetList.Font = Enum.Font.Gotham
+PetList.TextSize = 12
+PetList.BackgroundTransparency = 1
+PetList.TextXAlignment = Enum.TextXAlignment.Left
+PetList.TextYAlignment = Enum.TextYAlignment.Top
+PetList.TextWrapped = true
+PetList.Text = ""
+PetList.Parent = ActivePetsFrame
 
 -- Spawn Button
 local SpawnBtn = Instance.new("TextButton")
@@ -122,18 +150,15 @@ SpawnBtn.Parent = MainFrame
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
 	isMinimized = not isMinimized
-	if isMinimized then
-		for _, c in pairs(MainFrame:GetChildren()) do
-			if c ~= Title and c ~= MinimizeBtn then c.Visible = false end
+	for _, c in pairs(MainFrame:GetChildren()) do
+		if c ~= Title and c ~= MinimizeBtn then
+			c.Visible = not isMinimized
 		end
-		MainFrame.Size = UDim2.new(0, 350, 0, 30)
-	else
-		for _, c in pairs(MainFrame:GetChildren()) do c.Visible = true end
-		MainFrame.Size = UDim2.new(0, 350, 0, 320)
 	end
+	MainFrame.Size = isMinimized and UDim2.new(0, 350, 0, 30) or UDim2.new(0, 350, 0, 320)
 end)
 
--- Function to add a notification line
+-- Update UI
 local function addNotification(text)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1, -10, 0, 20)
@@ -144,22 +169,26 @@ local function addNotification(text)
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Text = text
 	label.Parent = NotificationFrame
-	
-	-- Update canvas size to fit all notifications
 	UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Wait()
 	NotificationFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
-	
-	-- Auto-scroll to bottom to show newest notification
 	NotificationFrame.CanvasPosition = Vector2.new(0, NotificationFrame.CanvasSize.Y.Offset)
 end
 
--- Add notification (shared for both user and bots)
 local function updateNotification(name, petName, kg, age)
 	local msg = name .. " spawned a " .. petName .. " (" .. kg .. "kg, " .. age .. "y)"
 	addNotification(msg)
 end
 
--- Spawn Pet on Click
+local function updateActivePetsUI()
+	ActivePetsTitle.Text = "Active Pets: " .. #ActivePets .. "/3"
+	local petListText = ""
+	for _, pet in ipairs(ActivePets) do
+		petListText = petListText .. pet.Name .. " (" .. pet.Weight .. "kg, " .. pet.Age .. "y)\n"
+	end
+	PetList.Text = petListText
+end
+
+-- Spawn Logic
 SpawnBtn.MouseButton1Click:Connect(function()
 	local petName = PetNameInput.Text
 	local kg = tonumber(KgInput.Text) or 1
@@ -168,11 +197,21 @@ SpawnBtn.MouseButton1Click:Connect(function()
 		addNotification("Please enter a valid pet name.")
 		return
 	end
+	if #ActivePets >= 3 then
+		addNotification("Pet limit reached! Max 3 active.")
+		return
+	end
 	Spawner.SpawnPet(petName, kg, age)
+	table.insert(ActivePets, {
+		Name = petName,
+		Weight = kg,
+		Age = age
+	})
+	updateActivePetsUI()
 	updateNotification(Player.Name, petName, kg, age)
 end)
 
--- Dynamic online count starting from random number
+-- Fake Online Count
 local fakeOnline = math.random(20, 100)
 OnlineUsers.Text = "Online: " .. fakeOnline
 task.spawn(function()
@@ -183,17 +222,16 @@ task.spawn(function()
 	end
 end)
 
--- Roblox-style random username generator for bots
+-- Fake Bots
 local adjectives = {"Crazy", "Silent", "Sneaky", "Happy", "Lucky", "Wild", "Swift", "Bold", "Clever", "Epic", "Funky", "Magic", "Shadow"}
 local nouns = {"Ninja", "Dragon", "Wolf", "Tiger", "Wizard", "Knight", "Pirate", "Gamer", "Raccoon", "Penguin", "Phoenix", "Clover", "Potato"}
 local function generateUsername()
-    local adj = adjectives[math.random(#adjectives)]
-    local noun = nouns[math.random(#nouns)]
-    local number = math.random(10, 9999)
-    return adj .. noun .. tostring(number)
+	local adj = adjectives[math.random(#adjectives)]
+	local noun = nouns[math.random(#nouns)]
+	local number = math.random(10, 9999)
+	return adj .. noun .. tostring(number)
 end
 
--- Fake bot notifications with garden pets
 task.spawn(function()
 	while true do
 		task.wait(math.random(5, 8))
