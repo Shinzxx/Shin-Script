@@ -3,9 +3,20 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 -- Load the Spawner module
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
+
+-- Spawner additional API calls
+Spawner.GetPets()
+Spawner.GetSeeds()
+Spawner.GetEggs()
+Spawner.SpawnPet("Raccoon", 1, 2)
+Spawner.SpawnSeed("Candy Blossom")
+Spawner.SpawnEgg("Night Egg")
+Spawner.Spin("Sunflower")
+Spawner.Load()
 
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
@@ -187,9 +198,38 @@ local UICorner6 = Instance.new("UICorner")
 UICorner6.CornerRadius = UDim.new(0, 6)
 UICorner6.Parent = SpawnButton
 
--- [SNIPPED: your existing notification logic, username generator, animated UI, drag, auto-spawn, etc.]
+-- Drag functionality
+local dragging = false
+local dragInput, dragStart, startPos
 
--- ========== SPAWN BUTTON FUNCTIONALITY ==========
+TitleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+-- Spawn Button Functionality
 SpawnButton.MouseButton1Click:Connect(function()
 	local petName = PetNameInput.Text
 	local weight = tonumber(KgInput.Text) or 0
@@ -201,6 +241,5 @@ SpawnButton.MouseButton1Click:Connect(function()
 
 	createNotification(Player.Name, petName, weight, age)
 
-	-- Actual Spawner API call
 	Spawner.SpawnPet(petName, weight, age)
 end)
