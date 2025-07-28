@@ -13,8 +13,8 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 350, 0, 240)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -120)
+MainFrame.Size = UDim2.new(0, 350, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -33,7 +33,7 @@ Title.TextSize = 18
 Title.ZIndex = 2
 Title.Parent = MainFrame
 
--- Online User Count (moved to LEFT)
+-- Online User Count (LEFT)
 local OnlineUsers = Instance.new("TextLabel")
 OnlineUsers.Size = UDim2.new(0, 120, 0, 20)
 OnlineUsers.Position = UDim2.new(0, 10, 0, 5)
@@ -86,23 +86,27 @@ local PetNameInput = createTextInput("Pet Name:", "Enter Pet Name", 40)
 local KgInput = createTextInput("Weight (kg):", "1‑10", 90)
 local AgeInput = createTextInput("Age:", "1‑15", 140)
 
--- Notification Bar
-local NotificationBar = Instance.new("TextLabel")
-NotificationBar.Size = UDim2.new(1, 0, 0, 20)
-NotificationBar.Position = UDim2.new(0, 0, 1, -20)
-NotificationBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-NotificationBar.TextColor3 = Color3.fromRGB(180, 255, 180)
-NotificationBar.Font = Enum.Font.Gotham
-NotificationBar.TextSize = 14
-NotificationBar.ZIndex = 1
-NotificationBar.Text = ""
-NotificationBar.Parent = MainFrame
+-- Notification container setup (scrollable history)
+local NotificationFrame = Instance.new("ScrollingFrame")
+NotificationFrame.Size = UDim2.new(1, -20, 0, 80)
+NotificationFrame.Position = UDim2.new(0, 10, 0, 190)
+NotificationFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+NotificationFrame.BorderSizePixel = 0
+NotificationFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+NotificationFrame.ScrollBarThickness = 6
+NotificationFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+NotificationFrame.Parent = MainFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 4)
+UIListLayout.Parent = NotificationFrame
 
 -- Spawn Button
 local SpawnBtn = Instance.new("TextButton")
 SpawnBtn.Text = "Spawn Pet"
 SpawnBtn.Size = UDim2.new(1, -20, 0, 30)
-SpawnBtn.Position = UDim2.new(0, 10, 0, 190)
+SpawnBtn.Position = UDim2.new(0, 10, 0, 280)
 SpawnBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 SpawnBtn.TextColor3 = Color3.new(1, 1, 1)
 SpawnBtn.Font = Enum.Font.GothamSemibold
@@ -120,14 +124,34 @@ MinimizeBtn.MouseButton1Click:Connect(function()
 		MainFrame.Size = UDim2.new(0, 350, 0, 30)
 	else
 		for _, c in pairs(MainFrame:GetChildren()) do c.Visible = true end
-		MainFrame.Size = UDim2.new(0, 350, 0, 240)
+		MainFrame.Size = UDim2.new(0, 350, 0, 320)
 	end
 end)
+
+-- Function to add a notification line
+local function addNotification(text)
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -10, 0, 20)
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.fromRGB(180, 255, 180)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Text = text
+	label.Parent = NotificationFrame
+	
+	-- Update canvas size to fit all notifications
+	UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Wait()
+	NotificationFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+	
+	-- Auto-scroll to bottom to show newest notification
+	NotificationFrame.CanvasPosition = Vector2.new(0, NotificationFrame.CanvasSize.Y.Offset)
+end
 
 -- Add notification (shared for both user and bots)
 local function updateNotification(name, petName, kg, age)
 	local msg = name .. " spawned a " .. petName .. " (" .. kg .. "kg, " .. age .. "y)"
-	NotificationBar.Text = msg
+	addNotification(msg)
 end
 
 -- Spawn Pet on Click
@@ -136,35 +160,39 @@ SpawnBtn.MouseButton1Click:Connect(function()
 	local kg = tonumber(KgInput.Text) or 1
 	local age = tonumber(AgeInput.Text) or 1
 	if petName == "" then
-		NotificationBar.Text = "Enter a valid pet name."
+		addNotification("Please enter a valid pet name.")
 		return
 	end
 	Spawner.SpawnPet(petName, kg, age)
 	updateNotification(Player.Name, petName, kg, age)
 end)
 
--- Dynamic online count
-local fakeOnline = #Players:GetPlayers() + math.random(10, 20)
+-- Dynamic online count starting from random number
+local fakeOnline = math.random(20, 100)
+OnlineUsers.Text = "Online: " .. fakeOnline
 task.spawn(function()
 	while true do
 		task.wait(math.random(3, 6))
-		fakeOnline = math.clamp(fakeOnline + math.random(-3, 5), 20, 500)
+		fakeOnline = math.clamp(fakeOnline + math.random(-5, 8), 20, 500)
 		OnlineUsers.Text = "Online: " .. fakeOnline
 	end
 end)
 
--- Fake bot notifications
-local fakeUsers = {
-	"GhostWizard", "LuckyPine", "FunkyKoala", "SneakyCarrot",
-	"MossyFox", "RaccoonWar", "MagicPotato", "ChocoPeng",
-	"SageLily", "TinyClover", "PetalFang", "LeafWhisker",
-	"BambooKnight", "TofuTiger"
-}
+-- Roblox-style random username generator for bots
+local adjectives = {"Crazy", "Silent", "Sneaky", "Happy", "Lucky", "Wild", "Swift", "Bold", "Clever", "Epic", "Funky", "Magic", "Shadow"}
+local nouns = {"Ninja", "Dragon", "Wolf", "Tiger", "Wizard", "Knight", "Pirate", "Gamer", "Raccoon", "Penguin", "Phoenix", "Clover", "Potato"}
+local function generateUsername()
+    local adj = adjectives[math.random(#adjectives)]
+    local noun = nouns[math.random(#nouns)]
+    local number = math.random(10, 9999)
+    return adj .. noun .. tostring(number)
+end
 
+-- Fake bot notifications with garden pets
 task.spawn(function()
 	while true do
 		task.wait(math.random(5, 8))
-		local bot = fakeUsers[math.random(#fakeUsers)]
+		local bot = generateUsername()
 		local pet = Pets[math.random(#Pets)]
 		local kg = math.random(1, 5)
 		local age = math.random(1, 10)
