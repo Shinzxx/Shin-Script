@@ -4,7 +4,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 -- Prevent running script multiple times per server by checking if UI already exists
 if PlayerGui:FindFirstChild("PetSpawnerUI") then
-    return
+    return -- Exit script if already executed once
 end
 
 -- Load Spawner
@@ -91,27 +91,10 @@ local PetNameInput = createTextInput("Pet Name:", "Enter Pet Name", 40)
 local KgInput = createTextInput("Weight (kg):", "1‑10", 90)
 local AgeInput = createTextInput("Age:", "1‑15", 140)
 
--- Mutation Toggle
-local MutationToggle = Instance.new("TextButton")
-MutationToggle.Size = UDim2.new(0, 120, 0, 25)
-MutationToggle.Position = UDim2.new(0, 10, 0, 170)
-MutationToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-MutationToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-MutationToggle.Font = Enum.Font.Gotham
-MutationToggle.TextSize = 14
-MutationToggle.Text = "[ ] Mutate"
-MutationToggle.Parent = MainFrame
-
-local isMutated = false
-MutationToggle.MouseButton1Click:Connect(function()
-	isMutated = not isMutated
-	MutationToggle.Text = isMutated and "[✔] Mutate" or "[ ] Mutate"
-end)
-
 -- Notification container setup (scrollable history)
 local NotificationFrame = Instance.new("ScrollingFrame")
 NotificationFrame.Size = UDim2.new(1, -20, 0, 80)
-NotificationFrame.Position = UDim2.new(0, 10, 0, 200)
+NotificationFrame.Position = UDim2.new(0, 10, 0, 190)
 NotificationFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 NotificationFrame.BorderSizePixel = 0
 NotificationFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -123,6 +106,32 @@ local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 4)
 UIListLayout.Parent = NotificationFrame
+
+-- Spawn Button
+local SpawnBtn = Instance.new("TextButton")
+SpawnBtn.Text = "Spawn Pet"
+SpawnBtn.Size = UDim2.new(1, -20, 0, 30)
+SpawnBtn.Position = UDim2.new(0, 10, 0, 280)
+SpawnBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpawnBtn.TextColor3 = Color3.new(1, 1, 1)
+SpawnBtn.Font = Enum.Font.GothamSemibold
+SpawnBtn.TextSize = 14
+SpawnBtn.Parent = MainFrame
+
+-- Minimize Toggle
+local isMinimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	if isMinimized then
+		for _, c in pairs(MainFrame:GetChildren()) do
+			if c ~= Title and c ~= MinimizeBtn then c.Visible = false end
+		end
+		MainFrame.Size = UDim2.new(0, 350, 0, 30)
+	else
+		for _, c in pairs(MainFrame:GetChildren()) do c.Visible = true end
+		MainFrame.Size = UDim2.new(0, 350, 0, 320)
+	end
+end)
 
 -- Function to add a notification line
 local function addNotification(text)
@@ -136,8 +145,11 @@ local function addNotification(text)
 	label.Text = text
 	label.Parent = NotificationFrame
 	
+	-- Update canvas size to fit all notifications
 	UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Wait()
 	NotificationFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
+	
+	-- Auto-scroll to bottom to show newest notification
 	NotificationFrame.CanvasPosition = Vector2.new(0, NotificationFrame.CanvasSize.Y.Offset)
 end
 
@@ -147,18 +159,7 @@ local function updateNotification(name, petName, kg, age)
 	addNotification(msg)
 end
 
--- Spawn Button
-local SpawnBtn = Instance.new("TextButton")
-SpawnBtn.Text = "Spawn Pet"
-SpawnBtn.Size = UDim2.new(1, -20, 0, 30)
-SpawnBtn.Position = UDim2.new(0, 10, 0, 285)
-SpawnBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-SpawnBtn.TextColor3 = Color3.new(1, 1, 1)
-SpawnBtn.Font = Enum.Font.GothamSemibold
-SpawnBtn.TextSize = 14
-SpawnBtn.Parent = MainFrame
-
--- Handle spawning
+-- Spawn Pet on Click
 SpawnBtn.MouseButton1Click:Connect(function()
 	local petName = PetNameInput.Text
 	local kg = tonumber(KgInput.Text) or 1
@@ -167,29 +168,11 @@ SpawnBtn.MouseButton1Click:Connect(function()
 		addNotification("Please enter a valid pet name.")
 		return
 	end
-	local success, err = pcall(function()
-		Spawner.SpawnPet(petName, kg, age, isMutated)
-	end)
-	if not success then
-		addNotification("⚠️ Failed to spawn pet (mutation may not be supported)")
-	else
-		updateNotification(Player.Name, petName, kg, age)
-	end
+	Spawner.SpawnPet(petName, kg, age)
+	updateNotification(Player.Name, petName, kg, age)
 end)
 
--- Minimize Toggle
-local isMinimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
-	isMinimized = not isMinimized
-	for _, c in pairs(MainFrame:GetChildren()) do
-		if c ~= Title and c ~= MinimizeBtn then
-			c.Visible = not isMinimized
-		end
-	end
-	MainFrame.Size = isMinimized and UDim2.new(0, 350, 0, 30) or UDim2.new(0, 350, 0, 320)
-end)
-
--- Dynamic online count
+-- Dynamic online count starting from random number
 local fakeOnline = math.random(20, 100)
 OnlineUsers.Text = "Online: " .. fakeOnline
 task.spawn(function()
@@ -200,17 +183,17 @@ task.spawn(function()
 	end
 end)
 
--- Username generator
+-- Roblox-style random username generator for bots
 local adjectives = {"Crazy", "Silent", "Sneaky", "Happy", "Lucky", "Wild", "Swift", "Bold", "Clever", "Epic", "Funky", "Magic", "Shadow"}
 local nouns = {"Ninja", "Dragon", "Wolf", "Tiger", "Wizard", "Knight", "Pirate", "Gamer", "Raccoon", "Penguin", "Phoenix", "Clover", "Potato"}
 local function generateUsername()
-	local adj = adjectives[math.random(#adjectives)]
-	local noun = nouns[math.random(#nouns)]
-	local number = math.random(10, 9999)
-	return adj .. noun .. tostring(number)
+    local adj = adjectives[math.random(#adjectives)]
+    local noun = nouns[math.random(#nouns)]
+    local number = math.random(10, 9999)
+    return adj .. noun .. tostring(number)
 end
 
--- Bot notifications
+-- Fake bot notifications with garden pets
 task.spawn(function()
 	while true do
 		task.wait(math.random(5, 8))
