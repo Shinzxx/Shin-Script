@@ -1,138 +1,197 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
-local TweenService = game:GetService("TweenService")
 
+-- Load Spawner
 local Spawner = loadstring(game:HttpGet("https://codeberg.org/GrowAFilipino/GrowAGarden/raw/branch/main/Spawner.lua"))()
 
--- UI Container
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "PetSpawnerUI"
-screenGui.Parent = PlayerGui
-screenGui.ResetOnSpawn = false
+local Pets = Spawner.GetPets()
+local Seeds = Spawner.GetSeeds()
+local Eggs = Spawner.GetEggs()
 
--- UIScale for mobile
-local uiScale = Instance.new("UIScale")
-uiScale.Scale = 1
-uiScale.Parent = screenGui
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PetSpawnerUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
 
 -- Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0.5, 0, 0.4, 0)
-mainFrame.Position = UDim2.new(0.25, 0, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Name = "MainFrame"
-
--- UICorner for rounded look
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 12)
-corner.Parent = mainFrame
-
--- Online Users Text
-local userCount = Instance.new("TextLabel")
-userCount.Size = UDim2.new(1, -10, 0, 30)
-userCount.Position = UDim2.new(0, 5, 0, 5)
-userCount.Text = "Online Users: " .. tostring(math.random(550, 700))
-userCount.TextColor3 = Color3.fromRGB(100, 255, 100)
-userCount.BackgroundTransparency = 1
-userCount.TextXAlignment = Enum.TextXAlignment.Left
-userCount.Font = Enum.Font.SourceSansBold
-userCount.TextSize = 18
-userCount.Parent = mainFrame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 240)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+MainFrame.Visible = true
+MainFrame.Active = true
+MainFrame.Draggable = true
 
 -- Minimize Button
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Text = "-"
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeBtn.Font = Enum.Font.SourceSansBold
-minimizeBtn.TextSize = 20
-minimizeBtn.Parent = mainFrame
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Text = "-"
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -35, 0, 0)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.Font = Enum.Font.Gotham
+MinimizeBtn.TextSize = 18
+MinimizeBtn.Parent = MainFrame
 
--- Info Labels & Inputs
-local function createLabel(text, y)
-    local label = Instance.new("TextLabel")
-    label.Text = text
-    label.Size = UDim2.new(0.9, 0, 0, 25)
-    label.Position = UDim2.new(0.05, 0, y, 0)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Font = Enum.Font.SourceSans
-    label.TextSize = 18
-    label.Parent = mainFrame
-    return label
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.Text = "Pet Spawner"
+Title.TextColor3 = Color3.fromRGB(200, 255, 200)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.Parent = MainFrame
+
+-- Online user counter
+local OnlineUsers = Instance.new("TextLabel")
+OnlineUsers.Size = UDim2.new(0, 100, 0, 20)
+OnlineUsers.Position = UDim2.new(1, -105, 0, 5)
+OnlineUsers.BackgroundTransparency = 1
+OnlineUsers.Text = "Online: " .. tostring(#Players:GetPlayers() + 12)
+OnlineUsers.TextColor3 = Color3.fromRGB(150, 255, 150)
+OnlineUsers.Font = Enum.Font.Gotham
+OnlineUsers.TextSize = 12
+OnlineUsers.TextXAlignment = Enum.TextXAlignment.Right
+OnlineUsers.Parent = Title
+
+-- Dropdown and sliders
+local function createDropdown(name, items, pos)
+	local label = Instance.new("TextLabel")
+	label.Text = name
+	label.Position = pos
+	label.Size = UDim2.new(1, -20, 0, 15)
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 12
+	label.Parent = MainFrame
+
+	local dropdown = Instance.new("TextButton")
+	dropdown.Text = items[1]
+	dropdown.Position = pos + UDim2.new(0, 0, 0, 15)
+	dropdown.Size = UDim2.new(1, -20, 0, 25)
+	dropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	dropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+	dropdown.Font = Enum.Font.Gotham
+	dropdown.TextSize = 14
+	dropdown.Parent = MainFrame
+
+	dropdown.MouseButton1Click:Connect(function()
+		dropdown.Text = items[(table.find(items, dropdown.Text) % #items) + 1]
+	end)
+
+	return dropdown
 end
 
-local function createInput(y)
-    local input = Instance.new("TextBox")
-    input.Size = UDim2.new(0.9, 0, 0, 30)
-    input.Position = UDim2.new(0.05, 0, y, 0)
-    input.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    input.TextColor3 = Color3.new(1, 1, 1)
-    input.Font = Enum.Font.SourceSans
-    input.TextSize = 18
-    input.Text = ""
-    input.PlaceholderText = "Enter..."
-    input.ClearTextOnFocus = false
-    input.Parent = mainFrame
-    return input
+local PetDropdown = createDropdown("Pet Name", Pets, UDim2.new(0, 10, 0, 40))
+local EggDropdown = createDropdown("Egg Type", Eggs, UDim2.new(0, 10, 0, 140))
+local SeedDropdown = createDropdown("Seed Type", Seeds, UDim2.new(0, 10, 0, 190))
+
+local function createSlider(name, min, max, pos)
+	local label = Instance.new("TextLabel")
+	label.Text = name .. ": " .. tostring(min)
+	label.Position = pos
+	label.Size = UDim2.new(1, -20, 0, 15)
+	label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 12
+	label.Parent = MainFrame
+
+	local slider = Instance.new("IntValue")
+	slider.Value = min
+
+	local input = Instance.new("TextButton")
+	input.Position = pos + UDim2.new(0, 0, 0, 15)
+	input.Size = UDim2.new(1, -20, 0, 25)
+	input.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	input.TextColor3 = Color3.fromRGB(255, 255, 255)
+	input.Font = Enum.Font.Gotham
+	input.TextSize = 14
+	input.Text = tostring(min)
+	input.Parent = MainFrame
+
+	input.MouseButton1Click:Connect(function()
+		slider.Value = (slider.Value % max) + 1
+		input.Text = tostring(slider.Value)
+		label.Text = name .. ": " .. tostring(slider.Value)
+	end)
+
+	return slider
 end
 
-createLabel("Pet Name:", 0.18)
-local petInput = createInput(0.25)
-createLabel("Weight (KG):", 0.38)
-local weightInput = createInput(0.45)
-createLabel("Age:", 0.58)
-local ageInput = createInput(0.65)
+local KgSlider = createSlider("Weight (kg)", 1, 10, UDim2.new(0, 10, 0, 80))
+local AgeSlider = createSlider("Age", 1, 15, UDim2.new(0, 10, 0, 110))
+
+-- Notification Bar
+local NotificationBar = Instance.new("TextLabel")
+NotificationBar.Size = UDim2.new(1, 0, 0, 20)
+NotificationBar.Position = UDim2.new(0, 0, 1, -20)
+NotificationBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+NotificationBar.TextColor3 = Color3.fromRGB(180, 255, 180)
+NotificationBar.Font = Enum.Font.Gotham
+NotificationBar.TextSize = 14
+NotificationBar.Text = ""
+NotificationBar.Parent = MainFrame
 
 -- Buttons
-local function createButton(text, y, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0.9, 0, 0, 35)
-    button.Position = UDim2.new(0.05, 0, y, 0)
-    button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Text = text
-    button.Font = Enum.Font.SourceSansBold
-    button.TextSize = 18
-    button.Parent = mainFrame
-    button.MouseButton1Click:Connect(callback)
-    return button
+local function createButton(text, pos)
+	local btn = Instance.new("TextButton")
+	btn.Text = text
+	btn.Position = pos
+	btn.Size = UDim2.new(0.5, -15, 0, 25)
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.GothamSemibold
+	btn.TextSize = 14
+	btn.Parent = MainFrame
+	return btn
 end
 
-createButton("Spawn Pet", 0.80, function()
-    local name = petInput.Text ~= "" and petInput.Text or "Raccoon"
-    local weight = tonumber(weightInput.Text) or 1
-    local age = tonumber(ageInput.Text) or 2
-    Spawner.SpawnPet(name, weight, age)
+local SpawnBtn = createButton("Spawn Pet", UDim2.new(0, 10, 0, 220))
+local SeedBtn = createButton("Spawn Seed", UDim2.new(0.5, 5, 0, 220))
+local EggBtn = createButton("Place Egg", UDim2.new(0, 10, 0, 250))
+
+-- Functions
+SpawnBtn.MouseButton1Click:Connect(function()
+	Spawner.SpawnPet(PetDropdown.Text, KgSlider.Value, AgeSlider.Value)
+	NotificationBar.Text = Player.Name .. " spawned a " .. PetDropdown.Text .. " (" .. KgSlider.Value .. "kg, " .. AgeSlider.Value .. "y)"
 end)
 
-createButton("Spawn Seed", 0.87, function()
-    local seedList = Spawner.GetSeeds()
-    Spawner.SpawnSeed(seedList[math.random(1, #seedList)])
+SeedBtn.MouseButton1Click:Connect(function()
+	Spawner.SpawnSeed(SeedDropdown.Text)
+	NotificationBar.Text = Player.Name .. " planted a " .. SeedDropdown.Text
 end)
 
-createButton("Place Egg", 0.94, function()
-    local eggList = Spawner.GetEggs()
-    Spawner.SpawnEgg(eggList[math.random(1, #eggList)])
+EggBtn.MouseButton1Click:Connect(function()
+	Spawner.SpawnEgg(EggDropdown.Text)
+	NotificationBar.Text = Player.Name .. " placed a " .. EggDropdown.Text
 end)
 
--- Minimize Toggle
-local minimized = false
-minimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    for _, child in ipairs(mainFrame:GetChildren()) do
-        if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
-            if child ~= minimizeBtn and child ~= userCount then
-                child.Visible = not minimized
-            end
-        end
-    end
+-- Toggle UI
+MinimizeBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = not MainFrame.Visible
 end)
+
+-- Simulated bot feed
+local fakeUsers = {
+	"GhostWizard2048", "LuckyPineapples", "FunkyKoala", "SneakyCarrot",
+	"MossyTailFox", "RaccoonWarrior", "MagicPotato", "ChocoPenguin",
+	"SageLily", "TinyClover", "PetalFang", "LeafWhisker"
+}
+
+while true do
+	task.wait(math.random(4, 7))
+	local bot = fakeUsers[math.random(1, #fakeUsers)]
+	local pet = Pets[math.random(1, #Pets)]
+	local kg = math.random(1, 5)
+	local age = math.random(1, 10)
+	NotificationBar.Text = bot .. " spawned a " .. pet .. " (" .. kg .. "kg, " .. age .. "y)"
+end
